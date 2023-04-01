@@ -1,0 +1,52 @@
+.uploadFiles {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.file,
+.file:before,
+.file:after {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+.file {
+  margin: 0;
+  padding: 2rem 1.5rem;
+  font: 1rem/1.5 "PT Sans", Arial, sans-serif;
+  color: #5a5a5a;
+}
+
+.uploadButton {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.uploadButton > * {
+  margin: 5px;
+}
+
+.progressContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin: 10px;
+}
+
+.progress {
+  width: 50%;
+  border-radius: 10px;
+}
+
+.alert {
+  margin: 0;
+  padding: 7px;
+}
