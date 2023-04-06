@@ -1,2 +1,3 @@
 node_modules
 resources/static/assets/uploads/*
+__pycache__
