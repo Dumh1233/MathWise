@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, send_from_directory
+from .model import image_segmentation
 from werkzeug.utils import secure_filename
 import os
 
@@ -8,9 +9,12 @@ UPLOAD_FOLDER = os.path.abspath("resources/static/assets/uploads/")
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 BASE_URL = "http://localhost:5000/files/"
 
+
 def allowed_file(filename):
     return '.' in filename and \
-           filename.rsplit('.', 1)[1] in {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx', 'xls', 'xlsx'}
+           filename.rsplit('.', 1)[1] in {
+               'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx', 'xls', 'xlsx'}
+
 
 @app.route('/api/upload', methods=['POST'])
 def upload():
@@ -25,6 +29,7 @@ def upload():
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        image_segmentation(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         return jsonify({'message': 'File uploaded successfully', 'filename': filename}), 200
     else:
         return jsonify({'message': 'Allowed file types are txt, pdf, png, jpg, jpeg, gif, doc, docx, xls, xlsx'}), 400
