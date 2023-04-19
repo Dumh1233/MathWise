@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify, send_from_directory
 from .model import image_segmentation
+from .detect_equation import detect
+from .calculator import parser_equation
 from werkzeug.utils import secure_filename
 import os
 
@@ -34,6 +36,17 @@ def upload():
     else:
         return jsonify({'message': 'Allowed file types are txt, pdf, png, jpg, jpeg, gif, doc, docx, xls, xlsx'}), 400
 
+
+@app.route('/api/answer', methods=['GET'])
+def getAnswer():
+    equation = detect()
+    equationAnswer = parser_equation(equation)
+    studentAnswer = equation.split("=")[1]
+    if equationAnswer == studentAnswer:
+        return jsonify({'message': 'Correct:  student: ${studentAnswer} , model: ${equationAnswer}'}), 200
+    else: 
+        return jsonify({'message': 'Wrong:    student: ${studentAnswer} , model: ${equationAnswer}'}), 200
+    
 
 @app.route('/api/files', methods=['GET'])
 def getListFiles():

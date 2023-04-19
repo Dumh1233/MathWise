@@ -55,7 +55,7 @@ class Div(BinExp):
         return  self.__right.calc() / self.__left.calc()
 
 
-def parser(expression)->double:
+def parser_equation(expression)->double:
     expression = expression.replace(" ", "")
     expression = expression.split("=")[0]
     stack = []
