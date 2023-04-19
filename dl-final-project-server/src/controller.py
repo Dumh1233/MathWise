@@ -43,9 +43,9 @@ def getAnswer():
     equationAnswer = parser_equation(equation)
     studentAnswer = equation.split("=")[1]
     if equationAnswer == studentAnswer:
-        return jsonify({'message': 'Correct:  student: ${studentAnswer} , model: ${equationAnswer}'}), 200
+        return jsonify({'message': 'Correct'}), 200 # return jsonify({'message': 'Correct:  student: ${studentAnswer} , model: ${equationAnswer}'}), 200
     else: 
-        return jsonify({'message': 'Wrong:    student: ${studentAnswer} , model: ${equationAnswer}'}), 200
+        return jsonify({'message': 'Wrong'}), 200 # return jsonify({'message': 'Wrong:    student: ${studentAnswer} , model: ${equationAnswer}'}), 200
     
 
 @app.route('/api/files', methods=['GET'])

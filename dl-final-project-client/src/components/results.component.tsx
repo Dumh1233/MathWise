@@ -8,13 +8,14 @@ const Results = () => {
     const getResults = () => {
         getResultsService.getAnswer().then((response) => {
           setResults(response.data);
+          console.log(response.data)
         });
       };
 
     return (
         <div>
             <input type="button" onClick={getResults} value="Get Results" />
-            {results && <div>{results}</div>}
+            {results && results.message && <div>{results.message}</div>}
         </div>
     )
 }

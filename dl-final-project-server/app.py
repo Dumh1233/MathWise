@@ -10,5 +10,4 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 routes(app)
 
 if __name__ == '__main__':
-    load_model(app.root_path)
     app.run(host='localhost', port=8080, debug=True)
