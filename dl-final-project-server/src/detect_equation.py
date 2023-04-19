@@ -7,9 +7,9 @@ SEGMENTED_OUTPUT_DIR = './segmented/'
 labels = ['/', '+', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '=', '*']
 model = ''
 
-def load_model():
+def load_model(root_path):
     global model
-    model =  keras.models.load_model("../../dl_models/saved_model/math_model")
+    model = keras.models.load_model(root_path + '/../dl_models/saved_model/math_model')
 
 def detect():
     equation = ''
