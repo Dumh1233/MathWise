@@ -1,21 +1,30 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import getResultsService from "../services/get-results.service";
+import '../styles/results.css';
 
-const Results = () => {
+interface Props {
+  fileInfos: any[];
+}
+
+const Results = ({ fileInfos }: Props) => {
     const [results, setResults] = useState<any>(null);
-    
+
     const getResults = () => {
         getResultsService.getAnswer().then((response) => {
           setResults(response.data);
-          console.log(response.data)
         });
       };
 
     return (
-        <div>
-            <input type="button" onClick={getResults} value="Get Results" />
-            {results && results.message && <div>{results.message}</div>}
+        <div className="resultsSection">
+            {results ? (
+              <div>
+                <span><b>Results: </b></span>
+                <span className={results.message == 'Wrong' ? 'wrong' : 'correct'}>{results.message}</span>
+              </div>
+            ) : (
+              fileInfos && fileInfos.length > 0 && <button onClick={getResults} className={"btn btn-primary"}>Get Results</button>
+            )}
         </div>
     )
 }

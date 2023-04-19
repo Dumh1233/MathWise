@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import UploadService from "../services/upload-files.service";
 import '../styles/upload-files.css';
 import FilesList from "./files-list.component";
+import Results from "./results.component";
 import UploadButton from "./upload-button.component";
 
 const UploadFiles = () => {
@@ -87,6 +88,7 @@ const UploadFiles = () => {
       )}
 
       {fileInfos.length > 0 && <FilesList {... {fileInfos}} />}
+      <Results {... { fileInfos } } />
     </div>
   );
 }
