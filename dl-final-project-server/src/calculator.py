@@ -87,9 +87,14 @@ def parser_equation(expression)->double:
         prev_token = c
     if current_token:
         queue.append(current_token)
+
+    equation_flag = False
+
     while (stack and (stack[-1] == '*' or stack[-1] == 'x' or stack[-1] == '/' or stack[-1] == ':' or stack[-1] == '+' or stack[-1] == '-')):
+        if stack[-1] == '=':
+            equation_flag = True
         queue.append(stack.pop())
-    return evaluate_postfix(queue)
+    return equation_flag and evaluate_postfix(queue)
 
 
 def evaluate_postfix(postfix_expr):
