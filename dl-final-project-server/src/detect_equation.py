@@ -1,17 +1,20 @@
+from flask import Flask
 from tensorflow import keras
 from PIL import Image
 import numpy as np
 import os
 
+app = Flask(__name__)
 SEGMENTED_OUTPUT_DIR = './segmented/'
 labels = ['/', '+', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '=', '*']
 model = ''
 
-def load_model():
-    global model
-    model =  keras.models.load_model("../../dl_models/saved_model/math_model")
+def load_model(root_path):
+    path = root_path + "\..\..\dl_models\saved_model\math_model\math_model.h5"
+    return keras.models.load_model(path)
 
 def detect():
+    model = load_model(app.root_path)
     equation = ''
     segmented_images = []
     files = [f for r, d, f in os.walk(SEGMENTED_OUTPUT_DIR)][0]

@@ -1,0 +1,15 @@
+.resultsSection {
+    padding: 20px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.wrong {
+    color: crimson;
+}
+
+.correct {
+    color: green;
+}
