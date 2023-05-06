@@ -1,4 +1,4 @@
-from .controller import upload, getListFiles, download, remove
+from .controller import getAnswer, upload, getListFiles, download, remove
 
 
 def routes(app):
@@ -17,3 +17,7 @@ def routes(app):
     @app.route('/files/<string:name>', methods=['DELETE'])
     def remove_route(name):
         return remove(name)
+
+    @app.route('/answer', methods=['GET'])
+    def getAnswer_route():
+        return getAnswer()

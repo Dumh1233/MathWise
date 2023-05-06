@@ -10,7 +10,7 @@ from matplotlib.pyplot import figure
 import os
 import sys
 
-OUTPUT_DIR = './segmented/'
+SEGMENTED_OUTPUT_DIR = './segmented/'
 
 
 def line_array(array):
@@ -198,7 +198,7 @@ def letter_seg(lines_img, x_lines, i, base_img_lines):
             letter_img = letter_img_tmp
             if (letter_img.any()):
                 letter_img = cv2.bitwise_not(letter_img_tmp)
-                cv2.imwrite(OUTPUT_DIR+str(i+1)+'_'+str(word)+'_' +
+                cv2.imwrite(SEGMENTED_OUTPUT_DIR + str(i+1) + '_' + str(word) + '_' +
                             str(letter_index)+'.jpg', 255-letter_img)
         else:
             x_linescopy.pop(0)
@@ -210,8 +210,8 @@ def letter_seg(lines_img, x_lines, i, base_img_lines):
             letter_img = cv2.resize(letter_img_tmp, dsize=(
                 28, 28), interpolation=cv2.INTER_AREA)
             if (letter_img.any()):
-                cv2.imwrite(OUTPUT_DIR+str(i+1)+'_'+str(word)+'_' +
-                            str(letter_index)+'.jpg', 255-letter_img)
+                cv2.imwrite(SEGMENTED_OUTPUT_DIR + str(i+1) + '_' + str(word) + '_' +
+                            str(letter_index) + '.jpg', 255-letter_img)
             # print(letter[e][0],x_linescopy[0], word)
 
 
@@ -268,7 +268,7 @@ def image_segmentation(filepath):
             lines.append((upperlines[y], lowerlines[y]))
     else:
         print("Too much noise in image, unable to process.\nPlease try with another image. Ctrl-C to exit:- ")
-        showimages()
+        # showimages()
         k = cv2.waitKey(0)
         while 1:
             k = cv2.waitKey(0)
@@ -325,7 +325,7 @@ def image_segmentation(filepath):
             x, y, w, h = cv2.boundingRect(cnt)
             cv2.rectangle(src_img, (x, y), (x + w, y + h), (0, 255, 0), 2)
             img_name = 'segmented/1_1_' + str(i) + '.jpg'
-    # plt.imshow(src_img)
+    plt.imshow(src_img)
 
     # -------------/Character segmenting-----------#
     segmented_images = []
