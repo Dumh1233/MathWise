@@ -1,16 +1,6 @@
+import numpy as np
 import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-from keras.models import load_model
-import pandas as pd
-import numpy as np
-from PIL import Image, ImageOps
-import matplotlib.pyplot as plt
-from matplotlib.pyplot import figure
 import os
-import sys
-
-SEGMENTED_OUTPUT_DIR = './segmented/'
 
 
 def line_array(array):
@@ -32,11 +22,11 @@ def strtline(y, array):
     count_prev = 0
     if y < 10:
         count_prev = 10 - y
-    for i in array[y:y+10]:
+    for i in array[y:y + 10]:
         if i > 3:
             count_ahead += 1
 
-    for i in array[y-10:y]:
+    for i in array[y - 10:y]:
         if i == 0:
             count_prev += 1
 
@@ -48,11 +38,11 @@ def endline(y, array):
     count_prev = 0
     if len(array) - y < 10:
         count_ahead = 10 - (len(array) - y)
-    for i in array[y:y+10]:
+    for i in array[y:y + 10]:
         if i == 0:
             count_ahead += 1
 
-    for i in array[y-10:y]:
+    for i in array[y - 10:y]:
         if i > 3:
             count_prev += 1
 
@@ -62,10 +52,10 @@ def endline(y, array):
 def endline_word(y, array, a):
     count_ahead = 0
     count_prev = 0
-    for i in array[y:y+2*a]:
+    for i in array[y:y + 2 * a]:
         if i < 2:
             count_ahead += 1
-    for i in array[y-a:y]:
+    for i in array[y - a:y]:
         if i > 2:
             count_prev += 1
     return count_prev, count_ahead
@@ -76,15 +66,15 @@ def end_line_array(array, a):
     for y in range(len(array)):
         e_p, e_a = endline_word(y, array, a)
         # print(e_p, e_a)
-        if e_a >= int(1.5*a) and e_p >= int(0.7*a):
+        if e_a >= int(1.5 * a) and e_p >= int(0.7 * a):
             list_endlines.append(y)
     return list_endlines
 
 
 def refine_endword(array):
     refine_list = []
-    for y in range(len(array)-1):
-        if array[y]+1 < array[y+1]:
+    for y in range(len(array) - 1):
+        if array[y] + 1 < array[y + 1]:
             refine_list.append(array[y])
 
     if len(array) != 0:
@@ -95,15 +85,15 @@ def refine_endword(array):
 def refine_array(array_upper, array_lower):
     upperlines = []
     lowerlines = []
-    for y in range(len(array_upper)-1):
-        if array_upper[y] + 5 < array_upper[y+1]:
+    for y in range(len(array_upper) - 1):
+        if array_upper[y] + 5 < array_upper[y + 1]:
             upperlines.append(max(array_upper[y] - 10, 0))
-    for y in range(len(array_lower)-1):
-        if array_lower[y] + 5 < array_lower[y+1]:
-            lowerlines.append(array_lower[y]+10)
+    for y in range(len(array_lower) - 1):
+        if array_lower[y] + 5 < array_lower[y + 1]:
+            lowerlines.append(array_lower[y] + 10)
 
     upperlines.append(max(array_upper[-1] - 10, 0))
-    lowerlines.append(array_lower[-1]+10)
+    lowerlines.append(array_lower[-1] + 10)
 
     return upperlines, lowerlines
 
@@ -117,10 +107,10 @@ def letter_width(contours):
             letter_width_sum += w
             count += 1
 
-    return letter_width_sum/count
+    return letter_width_sum / count
 
 
-def end_wrd_dtct(lines, i, bin_img, mean_lttr_width, total_width):
+def end_wrd_dtct(lines, i, bin_img, mean_lttr_width, total_width, final_thr):
     count_y = np.zeros(shape=total_width)
     for x in range(total_width):
         for y in range(lines[i][0], lines[i][1]):
@@ -149,7 +139,7 @@ def get_letter_rect(k, contours):
 
         x1, y1, w1, h1 = cv2.boundingRect(cnt)
 
-        if abs(x1 + w1/2 - (x + w/2)) < 50:
+        if abs(x1 + w1 / 2 - (x + w / 2)) < 50:
             if y1 > y:
                 h = abs(y - (y1 + h1))
                 w = abs(x - (x1 + w1))
@@ -159,20 +149,17 @@ def get_letter_rect(k, contours):
 
     if h * w < 100:
         valid = False
-    return (valid, x, y, w, h)
+    return valid, x, y, w, h
 
 
-def letter_seg(lines_img, x_lines, i, base_img_lines):
-    copy_img = lines_img[i].copy()
-    x_linescopy = x_lines[i].copy()
-
-    letter_img = []
+def letter_segmentation(lines_img, x_lines, i, base_img_lines, dir_path):
     letter_k = []
 
+    copy_img = lines_img[i].copy()
+    x_linescopy = x_lines[i].copy()
     contours, hierarchy = cv2.findContours(
         copy_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    # plt.imshow(copy_img)
-    print("letter contors:", len(contours))
+
     for k in range(len(contours)):
         cnt = contours[k]
         if cv2.contourArea(cnt) < 50:
@@ -183,75 +170,65 @@ def letter_seg(lines_img, x_lines, i, base_img_lines):
             letter_k.append((x, y, w, h))
 
     letter = sorted(letter_k, key=lambda student: student[0])
-    # print(letter)
-    # plt.subplot(2, 3, i + 1)
-    # plt.imshow(copy_img)
 
     word = 1
     letter_index = 0
     for e in range(len(letter)):
-        if (letter[e][0] < x_linescopy[0]):
+        if letter[e][0] < x_linescopy[0]:
             letter_index += 1
-            letter_img_tmp = base_img_lines[i][letter[e][1]-5:letter[e]
-                                               [1]+letter[e][3]+5, letter[e][0]-5:letter[e][0]+letter[e][2]+5]
-            # cv2.resize(letter_img_tmp, dsize =(28, 28), interpolation = cv2.INTER_AREA)
+            letter_img_tmp = base_img_lines[i][letter[e][1] - 5:letter[e][1] + letter[e][3] + 5,
+                             letter[e][0] - 5:letter[e][0] + letter[e][2] + 5]
+
             letter_img = letter_img_tmp
-            if (letter_img.any()):
+            if letter_img.any():
                 letter_img = cv2.bitwise_not(letter_img_tmp)
-                cv2.imwrite(SEGMENTED_OUTPUT_DIR + str(i+1) + '_' + str(word) + '_' +
-                            str(letter_index)+'.jpg', 255-letter_img)
+                cv2.imwrite(dir_path + "/" + str(i + 1) + '_' + str(word) + '_' +
+                            str(letter_index) + '.jpg', letter_img)
         else:
             x_linescopy.pop(0)
             word += 1
             letter_index = 1
-            letter_img_tmp = base_img_lines[i][letter[e][1]-5:letter[e]
-                                               [1]+letter[e][3]+5, letter[e][0]-5:letter[e][0]+letter[e][2]+5]
+            letter_img_tmp = base_img_lines[i][letter[e][1] - 5:letter[e][1] + letter[e][3] + 5,
+                             letter[e][0] - 5:letter[e][0] + letter[e][2] + 5]
             letter_img_tmp = cv2.bitwise_not(letter_img_tmp)
             letter_img = cv2.resize(letter_img_tmp, dsize=(
                 28, 28), interpolation=cv2.INTER_AREA)
-            if (letter_img.any()):
-                cv2.imwrite(SEGMENTED_OUTPUT_DIR + str(i+1) + '_' + str(word) + '_' +
-                            str(letter_index) + '.jpg', 255-letter_img)
-            # print(letter[e][0],x_linescopy[0], word)
+            if letter_img.any():
+                cv2.imwrite(dir_path + "/" + str(i + 1) + '_' + str(word) + '_' +
+                            str(letter_index) + '.jpg', letter_img)
 
 
 def image_segmentation(filepath):
-    # -------------Thresholding Image--------------#
-    print("\n........Program Initiated.......\n")
+    width = 1500
+    pixel_set = 255
+    kernel_size = 99
+    normalized_mean = 30
+    x_lines = []
+    lines_img = []
+    base_img_lines = []
+
+    dir_path = filepath.rsplit("/", 3)[0] + "/segmentations/" + filepath.split("/")[10].split(".")[0]
+    os.mkdir(dir_path)
+    print("\n Start Segmentation Pre-Processing \n")
     src_img = cv2.imread(filepath, cv2.IMREAD_GRAYSCALE)
     orig_height, orig_width = src_img.shape
 
-    print("\n Resizing Image........")
-    width = 1320
     height = int(width * orig_height / orig_width)
     src_img = cv2.resize(src_img, dsize=(width, height),
                          interpolation=cv2.INTER_AREA)
 
-    print("#---------Image Info:--------#")
-    print("\tHeight =", height, "\n\tWidth =", width)
-    print("#----------------------------#")
-    print("Applying Adaptive Threshold with kernel :- 21 X 21")
-
-    PIXEL_SET = 255
-    kernel_size = 99
-    normalized_mean = 20
-    bin_img = cv2.adaptiveThreshold(src_img, PIXEL_SET, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, kernel_size,
+    bin_img = cv2.adaptiveThreshold(src_img, pixel_set, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, kernel_size,
                                     normalized_mean)
-    plt.imshow(bin_img)
 
-    print("Noise Removal From Image.........")
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-    final_thr = cv2.morphologyEx(bin_img, cv2.MORPH_CLOSE, kernel)
-    contr_retrival = final_thr.copy()
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (10, 90))
+    morph = cv2.morphologyEx(bin_img, cv2.MORPH_CLOSE, kernel)
+    morph_copy = morph.copy()
 
-    # -------------/Thresholding Image-------------#
-
-    # -------------Line Detection------------------#
-    print("Beginning Character Semenation..............")
-    count_x = np.zeros(shape=(height))
+    print("Start segmentation")
+    count_x = np.zeros(shape=height)
     for y in range(height):
         for x in range(width):
-            if bin_img[y][x] == PIXEL_SET:
+            if bin_img[y][x] == pixel_set:
                 count_x[y] += 1
 
     upper_lines, lower_lines = line_array(count_x)
@@ -261,14 +238,13 @@ def image_segmentation(filepath):
     if len(upperlines) == len(lowerlines):
         lines = []
         for y in upperlines:
-            final_thr[y][:] = PIXEL_SET
+            morph[y][:] = pixel_set
         for y in lowerlines:
-            final_thr[y][:] = PIXEL_SET
+            morph[y][:] = pixel_set
         for y in range(len(upperlines)):
             lines.append((upperlines[y], lowerlines[y]))
     else:
         print("Too much noise in image, unable to process.\nPlease try with another image. Ctrl-C to exit:- ")
-        # showimages()
         k = cv2.waitKey(0)
         while 1:
             k = cv2.waitKey(0)
@@ -278,57 +254,20 @@ def image_segmentation(filepath):
 
     lines = np.array(lines)
     no_of_lines = len(lines)
-    print("\nGiven Text has   # ", no_of_lines, " #   no. of lines")
 
-    lines_img = []
-    base_img_lines = []
     for i in range(no_of_lines):
-        lines_img.append(bin_img[lines[i][0]:lines[i][1], :])
+        lines_img.append(morph_copy[lines[i][0]:lines[i][1], :])
         base_img_lines.append(src_img[lines[i][0]:lines[i][1], :])
 
-    # -------------/Line Detection-----------------#
-
-    # -------------Letter Width Calculation--------#
-
     contours, hierarchy = cv2.findContours(
-        contr_retrival, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cv2.drawContours(src_img, contours, -1, (0, 255, 0), 1)
-
-    mean_lttr_width = letter_width(contours)
-    print("\nAverage Width of Each Letter:- ", mean_lttr_width)
-
-    # -------------/Letter Width Calculation-------#
-
-    # --------------Word Detection-----------------#
-    x_lines = []
+        morph_copy, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    mean_letter_width = letter_width(contours)
 
     for i in range(len(lines_img)):
-        x_lines.append(end_wrd_dtct(lines, i, bin_img, mean_lttr_width, width))
+        x_lines.append(end_wrd_dtct(lines, i, bin_img, mean_letter_width, width, morph))
 
     for i in range(len(x_lines)):
         x_lines[i].append(width)
 
-    # -------------/Word Detection-----------------#
-
-    # -------------Letter Segmentation-------------#
     for i in range(len(lines)):
-        letter_seg(lines_img, x_lines, i, base_img_lines)
-
-    # ------------\Letter Segmentation-------------#
-
-    # -------------Character segmenting------------#
-
-    contours, hierarchy = cv2.findContours(
-        bin_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    for i, cnt in enumerate(contours):
-        if cv2.contourArea(cnt) > 50:
-            x, y, w, h = cv2.boundingRect(cnt)
-            cv2.rectangle(src_img, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            img_name = 'segmented/1_1_' + str(i) + '.jpg'
-    plt.imshow(src_img)
-
-    # -------------/Character segmenting-----------#
-    segmented_images = []
-    files = [f for r, d, f in os.walk(OUTPUT_DIR)][0]
-    for f in files:
-        segmented_images.append(Image.open(OUTPUT_DIR + f))
+        letter_segmentation(lines_img, x_lines, i, base_img_lines, dir_path)
