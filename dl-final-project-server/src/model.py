@@ -208,8 +208,8 @@ def image_segmentation(filepath):
     base_img_lines = []
 
     dir_path = filepath.rsplit("/", 3)[0] + "/segmentations/" + filepath.split("/")[10].split(".")[0]
-    os.mkdir(dir_path)
-    print("\n Start Segmentation Pre-Processing \n")
+    os.makedirs(dir_path, exist_ok=True)
+    print("\nStart Segmentation Pre-Processing \n")
     src_img = cv2.imread(filepath, cv2.IMREAD_GRAYSCALE)
     orig_height, orig_width = src_img.shape
 
