@@ -329,6 +329,6 @@ def image_segmentation(filepath):
 
     # -------------/Character segmenting-----------#
     segmented_images = []
-    files = [f for r, d, f in os.walk(SEGMENTED_OUTPUT_DIR)][0]
+    files = [f for r, d, f in os.walk(OUTPUT_DIR)][0]
     for f in files:
-        segmented_images.append(Image.open(SEGMENTED_OUTPUT_DIR + f))
+        segmented_images.append(Image.open(OUTPUT_DIR + f))
