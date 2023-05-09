@@ -183,7 +183,7 @@ def letter_segmentation(lines_img, x_lines, i, base_img_lines, dir_path):
             if letter_img.any():
                 letter_img = cv2.bitwise_not(letter_img_tmp)
                 cv2.imwrite(dir_path + "/" + str(i + 1) + '_' + str(word) + '_' +
-                            str(letter_index) + '.jpg', letter_img)
+                            str(letter_index) + '.jpg', 255 - letter_img)
         else:
             x_linescopy.pop(0)
             word += 1
@@ -195,7 +195,7 @@ def letter_segmentation(lines_img, x_lines, i, base_img_lines, dir_path):
                 28, 28), interpolation=cv2.INTER_AREA)
             if letter_img.any():
                 cv2.imwrite(dir_path + "/" + str(i + 1) + '_' + str(word) + '_' +
-                            str(letter_index) + '.jpg', letter_img)
+                            str(letter_index) + '.jpg', 255 - letter_img)
 
 
 def image_segmentation(filepath):
