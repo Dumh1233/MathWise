@@ -4,3 +4,4 @@ opencv-python
 numpy
 matplotlib
 Pillow
+pdf2image
