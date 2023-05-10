@@ -207,7 +207,7 @@ def image_segmentation(filepath):
     lines_img = []
     base_img_lines = []
 
-    dir_path = filepath.rsplit("/", 3)[0] + "/segmentations/" + filepath.split("/")[10].split(".")[0]
+    dir_path = filepath.rsplit("/", 3)[0] + "/segmentations/" + filepath.split("/")[-1].split(".")[0]
     os.makedirs(dir_path, exist_ok=True)
     print("\nStart Segmentation Pre-Processing \n")
     src_img = cv2.imread(filepath, cv2.IMREAD_GRAYSCALE)
