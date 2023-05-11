@@ -1,5 +1,6 @@
 from .controller import getAnswer, upload, getListFiles, download, remove
 
+
 def routes(app):
     @app.route('/upload', methods=['POST'])
     def upload_route():

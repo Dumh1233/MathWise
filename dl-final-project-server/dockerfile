@@ -1,0 +1,11 @@
+FROM tensorflow/tensorflow:latest-py3
+WORKDIR /code
+ENV FLASK_APP=app.py
+ENV FLASK_RUN_HOST=0.0.0.0
+RUN pip install --upgrade pip setuptools wheel
+COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt
+EXPOSE 5000
+COPY src .
+COPY app.py .
+CMD ["flask", "run"]

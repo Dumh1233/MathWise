@@ -1,0 +1,7 @@
+flask
+flask_cors
+opencv-python
+numpy
+matplotlib
+Pillow
+pdf2image
