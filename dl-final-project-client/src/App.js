@@ -12,7 +12,6 @@ function App() {
         <Header />
       </div>
       <div className="content">
-        <h4 className="display-4" >Upload some exams to get started!</h4>
         <UploadFiles />
       </div>
     </div>

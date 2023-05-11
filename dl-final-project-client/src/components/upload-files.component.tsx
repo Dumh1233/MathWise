@@ -58,6 +58,7 @@ const UploadFiles = () => {
 
   return (
     <div className="uploadFiles">
+      <h4 className="display-4" >Upload some exams to get started!</h4>
       <UploadButton {... { selectFiles, uploadFiles, selectedFiles }} />
       {progressInfos &&
         progressInfos.map((progressInfo, index) => (
