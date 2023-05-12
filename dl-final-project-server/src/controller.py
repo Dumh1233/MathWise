@@ -5,6 +5,7 @@ from .calculator import parser_equation
 from .pages_segmentation import split_equations
 from werkzeug.utils import secure_filename
 import os
+import shutil
 
 app = Flask(__name__)
 
@@ -91,7 +92,7 @@ def getListFiles():
 @app.route('/api/files/<string:filename>', methods=['GET'])
 def download(filename):
     try:
-        return send_from_directory(directory=app.config['UPLOAD_FOLDER'], path=filename, as_attachment=True)
+        return send_from_directory(directory=app.config['UPLOAD_FOLDER'], filename=filename, as_attachment=True)
     except Exception as e:
         return jsonify({'message': 'Could not download the file. ' + str(e)}), 500
 
@@ -114,12 +115,34 @@ def removeSync(filename):
         return jsonify({'message': 'Could not delete the file. ' + str(e)}), 500
 
 
+@app.route('/api/emptyServer', methods=['DELETE'])
+def deleteAllFiles():
+    try:
+        splits_path = './resources/static/assets/uploads_splits'
+        shutil.rmtree(splits_path)
+        print('deleted ' + splits_path)
+
+        file_list = os.listdir(app.config['UPLOAD_FOLDER'])
+
+        # Loop through the file list and delete each file
+        for file_name in file_list:
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], file_name)
+            os.remove(file_path)
+            print('deleted ' + file_path)
+
+        return jsonify({'message': 'All files deleted.'}), 200
+    except Exception as e:
+        return jsonify({'message': 'Could not delete files. ' + str(e)}), 500
+
+
 @app.route('/api/getSegmentedPage/<string:filename>/<string:page>', methods=['GET'])
 def getSegmentedPage(filename, page):
     try:
         filename = filename.partition('.')
         filename = filename[0]
-        return send_from_directory(directory=app.config['UPLOAD_SPLITS_FOLDER'] + "/" + filename + "/" + page + "/equations", path=page + ".jpg", as_attachment=True)
+        return send_from_directory(
+            directory=app.config['UPLOAD_SPLITS_FOLDER'] + "/" + filename + "/" + page + "/equations",
+            path=page + ".jpg", as_attachment=True)
     except Exception as e:
         print("exception : " + str(e))
         print(app.config['UPLOAD_SPLITS_FOLDER'] +

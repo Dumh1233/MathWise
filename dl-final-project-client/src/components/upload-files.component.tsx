@@ -7,77 +7,51 @@ import UploadButton from "./upload-button.component";
 
 const UploadFiles = () => {
   const [selectedFiles, setSelectedFiles] = useState<any[]>([]);
-  const [progressInfos, setProgressInfos] = useState<any[]>([]);
   const [message, setMessage] = useState<string[]>([]);
   const [fileInfos, setFileInfos] = useState<any[]>([]);
+  const [deleteToggle, setDeleteToggle] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     UploadService.getFiles().then((response) => {
       setFileInfos(response.data);
     });
-  }, []);
+  }, [deleteToggle]);
 
   const selectFiles = (event: any) => {
-    setProgressInfos([]);
     setSelectedFiles(event.target.files);
   }
 
-  const upload = (idx: number, file: any, tempProgressInfos: any) => {
-    UploadService.upload(file, (event: any) => {
-      tempProgressInfos[idx].percentage = Math.round((100 * event.loaded) / event.total);
-      setProgressInfos(tempProgressInfos);
-    })
+  const upload = (idx: number, file: any) => {
+    setLoading(true);
+    UploadService.upload(file, (event: any) => {})
       .then((response) => {
         setMessage(message => [...message, "Successfully uploaded: " + file.name]);
         return UploadService.getFiles();
       })
       .then((files) => {
         setFileInfos(files.data);
+        setLoading(false);
       })
       .catch((error) => {
-        tempProgressInfos[idx].percentage = 0;
         setMessage(message => [...message, "Could not upload: " + file.name + ", " + error.message]);
-        setProgressInfos(tempProgressInfos);
       });
   }
 
   const uploadFiles = () => {
-    let _progressInfos = [];
 
-    for (let i = 0; i < selectedFiles.length; i++) {
-      _progressInfos.push({ percentage: 0, fileName: selectedFiles[i].name });
-    }
-
-    setProgressInfos(_progressInfos);
     setMessage([]);
     
     for (let i = 0; i < selectedFiles.length; i++) {
-      upload(i, selectedFiles[i], _progressInfos);
+      upload(i, selectedFiles[i]);
     }
   }
 
   return (
     <div className="uploadFiles">
+      {loading && <div className="spinner-border text-primary" role="status" />}
       <h4 className="display-4" >Upload some exams to get started!</h4>
       <UploadButton {... { selectFiles, uploadFiles, selectedFiles }} />
-      {progressInfos &&
-        progressInfos.map((progressInfo, index) => (
-          <div className="progressContainer" key={index}>
-            <span>{progressInfo.fileName}</span>
-            <div className="progress">
-              <div
-                className="progress-bar progress-bar-info"
-                role="progressbar"
-                aria-valuenow={progressInfo.percentage}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                style={{ width: progressInfo.percentage + "%" }}
-              >
-                {progressInfo.percentage}%
-              </div>
-            </div>
-          </div>
-        ))}
       {message.length > 0 && (
         <div>
           {message.map((item: string, i) => {
@@ -87,8 +61,7 @@ const UploadFiles = () => {
           )}
         </div>
       )}
-
-      {fileInfos.length > 0 && <FilesList {... {fileInfos}} />}
+      {fileInfos.length > 0 && <FilesList {... {fileInfos, deleteToggle, setDeleteToggle}} />}
       <Results {... { fileInfos } } />
     </div>
   );

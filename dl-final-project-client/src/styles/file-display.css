@@ -1,0 +1,13 @@
+.fileLink {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    padding: 5px;
+    justify-content: space-between;
+    border: 1px solid lightgray;
+}
+
+.fileLink > a {
+    margin-left: 50px;
+}
