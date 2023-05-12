@@ -20,7 +20,7 @@ const Results = ({ fileInfos }: Props) => {
             {results ? (
               <div>
                 <span><b>Results: </b></span>
-                <span className={results.message == 'Wrong' ? 'wrong' : 'correct'}>{results.message}</span>
+                <span className={results.message === 'Wrong' ? 'wrong' : 'correct'}>{results.message}</span>
               </div>
             ) : (
               fileInfos && fileInfos.length > 0 && <button onClick={getResults} className={"btn btn-primary"}>Get Results</button>

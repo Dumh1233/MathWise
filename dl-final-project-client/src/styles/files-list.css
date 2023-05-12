@@ -2,3 +2,23 @@
     margin: 10px;
     width: 75% !important;
 }
+
+.list-group-item {
+    position: relative;
+}
+
+.fileName {
+    display: block;
+    margin-bottom: 20px;
+}
+
+.pageExampleCtr {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.pageExampleCtr>* {
+    margin: 10px;
+}
