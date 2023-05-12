@@ -10,6 +10,11 @@ app = Flask(__name__)
 
 UPLOAD_FOLDER = os.path.abspath("resources/static/assets/uploads/")
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+UPLOAD_SPLITS_FOLDER = os.path.abspath(
+    "resources/static/assets/uploads_splits/")
+app.config['UPLOAD_SPLITS_FOLDER'] = UPLOAD_SPLITS_FOLDER
+
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 BASE_URL = "http://localhost:5000/files/"
 
@@ -49,10 +54,12 @@ def getAnswer():
     equationAnswer = parser_equation(equation)
     studentAnswer = equation.split("=")[1]
     if equationAnswer == studentAnswer:
-        return jsonify({'message': 'Correct'}), 200 # return jsonify({'message': 'Correct:  student: ${studentAnswer} , model: ${equationAnswer}'}), 200
-    else: 
-        return jsonify({'message': 'Wrong'}), 200 # return jsonify({'message': 'Wrong:    student: ${studentAnswer} , model: ${equationAnswer}'}), 200
-    
+        # return jsonify({'message': 'Correct:  student: ${studentAnswer} , model: ${equationAnswer}'}), 200
+        return jsonify({'message': 'Correct'}), 200
+    else:
+        # return jsonify({'message': 'Wrong:    student: ${studentAnswer} , model: ${equationAnswer}'}), 200
+        return jsonify({'message': 'Wrong'}), 200
+
 
 @app.route('/api/files', methods=['GET'])
 def getListFiles():
@@ -61,9 +68,20 @@ def getListFiles():
         for filename in os.listdir(app.config['UPLOAD_FOLDER']):
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             if os.path.isfile(file_path) and allowed_file(filename):
+                filenameNoExtensions = filename.partition('.')
+                filenameNoExtensions = filenameNoExtensions[0]
+                segmented_pages_url = os.path.join(
+                    app.config['UPLOAD_SPLITS_FOLDER'], filenameNoExtensions)
+                segmentedPages = []
+                for path in os.listdir(segmented_pages_url):
+                    # check if current path is a file
+                    if os.path.isdir(os.path.join(segmented_pages_url, path)):
+                        segmentedPages.append("http://localhost:5000/getSegmentedPage/" +
+                                              filenameNoExtensions + "/" + path)
                 fileInfos.append({
                     "name": filename,
-                    "url": BASE_URL + filename
+                    "url": BASE_URL + filename,
+                    "segmentedPages": segmentedPages
                 })
         return jsonify(fileInfos), 200
     except Exception as e:
@@ -73,7 +91,7 @@ def getListFiles():
 @app.route('/api/files/<string:filename>', methods=['GET'])
 def download(filename):
     try:
-        return send_from_directory(directory=app.config['UPLOAD_FOLDER'], filename=filename, as_attachment=True)
+        return send_from_directory(directory=app.config['UPLOAD_FOLDER'], path=filename, as_attachment=True)
     except Exception as e:
         return jsonify({'message': 'Could not download the file. ' + str(e)}), 500
 
@@ -94,3 +112,16 @@ def removeSync(filename):
         return jsonify({'message': 'File is deleted.'}), 200
     except Exception as e:
         return jsonify({'message': 'Could not delete the file. ' + str(e)}), 500
+
+
+@app.route('/api/getSegmentedPage/<string:filename>/<string:page>', methods=['GET'])
+def getSegmentedPage(filename, page):
+    try:
+        filename = filename.partition('.')
+        filename = filename[0]
+        return send_from_directory(directory=app.config['UPLOAD_SPLITS_FOLDER'] + "/" + filename + "/" + page + "/equations", path=page + ".jpg", as_attachment=True)
+    except Exception as e:
+        print("exception : " + str(e))
+        print(app.config['UPLOAD_SPLITS_FOLDER'] +
+              "/" + filename + "/page_" + page + "/equations")
+        return jsonify({'message': 'Could not download the file. ' + str(e)}), 500

@@ -10,7 +10,7 @@ def split_pdf_to_pages(file_name, dir_path):
 
 
 def split_jpgs_to_equations(file_path):
-    os.system("python ../dl_models/page_segmentation_model/yolov5-master/detect.py "
+    os.system("py ../dl_models/page_segmentation_model/yolov5-master/detect.py "
               "--weights ../dl_models/page_segmentation_model/best.pt "
               "--conf 0.1 "
               "--source " + file_path + '.jpg' + " --save-crop "
@@ -28,7 +28,8 @@ def split_equations(file_name):
             pages[i].save(dir_split_path + "/page_" + str(i) + '.jpg', 'JPEG')
             split_jpgs_to_equations(dir_split_path + "/page_" + str(i))
     else:
-        shutil.copyfile(dir_upload_path + file_name, dir_split_path + '/page_0.jpg')
+        shutil.copyfile(dir_upload_path + file_name,
+                        dir_split_path + '/page_0.jpg')
         split_jpgs_to_equations(dir_split_path + '/page_0')
     crop_equations_list = []
     for directory in next(os.walk(dir_split_path))[1]:
@@ -38,4 +39,3 @@ def split_equations(file_name):
                 crop_equations_list.append(tmp_path + "/" + file)
     print(crop_equations_list)
     return crop_equations_list
-
