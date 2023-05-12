@@ -1,6 +1,17 @@
 .filesList {
     margin: 10px;
-    width: 75% !important;
+    width: 50% !important;
+}
+
+.fileListHeader {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.deleteButton {
+    height: 50% !important;
 }
 
 .list-group-item {
