@@ -135,16 +135,13 @@ def deleteAllFiles():
         return jsonify({'message': 'Could not delete files. ' + str(e)}), 500
 
 
-@app.route('/api/getSegmentedPage/<string:filename>/<string:page>', methods=['GET'])
-def getSegmentedPage(filename, page):
+@app.route('/api/getSegmentedPage/<string:filename_directory>/<string:page>', methods=['GET'])
+def getSegmentedPage(filename_directory, page):
     try:
-        filename = filename.partition('.')
-        filename = filename[0]
         return send_from_directory(
-            directory=app.config['UPLOAD_SPLITS_FOLDER'] + "/" + filename + "/" + page + "/equations",
-            path=page + ".jpg", as_attachment=True)
+            directory=app.config['UPLOAD_SPLITS_FOLDER'] + "\\" + filename_directory,
+            filename=page + ".jpg", as_attachment=True)
     except Exception as e:
         print("exception : " + str(e))
-        print(app.config['UPLOAD_SPLITS_FOLDER'] +
-              "/" + filename + "/page_" + page + "/equations")
+        print(app.config['UPLOAD_SPLITS_FOLDER'] + "\\" + filename_directory + "\\" + page + ".jpg")
         return jsonify({'message': 'Could not download the file. ' + str(e)}), 500
