@@ -7,11 +7,6 @@ interface Props {
 }
 
 const FileDisplayModal = ({ fileInfo, index }: Props) => {
-    console.log(fileInfo.segmentedPages)
-    useEffect(() => {
-        console.log('change');
-    }, [fileInfo]);
-
     return (
         <div className="modal fade" id={`ModalCenter${index}`} tabIndex={-1} role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
             <div className="modal-dialog modal-dialog-centered" role="document">
@@ -26,7 +21,6 @@ const FileDisplayModal = ({ fileInfo, index }: Props) => {
                     <div>
                         {fileInfo.segmentedPages && fileInfo.segmentedPages.map((url:string,key:string)=> (
                             <img 
-                                key={key} 
                                 alt="segmented page" 
                                 className="img-fluid"
                                 src={url} 
