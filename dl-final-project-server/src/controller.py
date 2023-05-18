@@ -6,6 +6,7 @@ from .pages_segmentation import split_equations
 from werkzeug.utils import secure_filename
 import os
 import shutil
+import base64
 
 app = Flask(__name__)
 
@@ -48,7 +49,6 @@ def upload():
     else:
         return jsonify({'message': 'Allowed file types are txt, pdf, png, jpg, jpeg, gif, doc, docx, xls, xlsx'}), 400
 
-
 @app.route('/api/answer', methods=['GET'])
 def getAnswer():
     equation = detect()
@@ -73,26 +73,41 @@ def getListFiles():
                 filenameNoExtensions = filenameNoExtensions[0]
                 segmented_pages_url = os.path.join(
                     app.config['UPLOAD_SPLITS_FOLDER'], filenameNoExtensions)
+
                 segmentedPages = []
                 for path in os.listdir(segmented_pages_url):
                     # check if current path is a file
                     if os.path.isdir(os.path.join(segmented_pages_url, path)):
                         segmentedPages.append("http://localhost:5000/getSegmentedPage/" +
                                               filenameNoExtensions + "/" + path)
+
+                segmentedEquations = []
+                for path in os.listdir(segmented_pages_url):
+                    path = path.split('.')[0]
+                    pageEquationsPath = os.path.join(app.config['UPLOAD_SPLITS_FOLDER'], segmented_pages_url, path, 'equations', 'crops', 'equation')
+                    if os.path.isdir(pageEquationsPath):
+                        for equation in os.listdir(pageEquationsPath):
+                            equation = equation.split('.')[0]
+                            pageEquationsPath = pageEquationsPath.replace("\\", "!")
+                            segmentedEquations.append("http://localhost:5000/getSegmentedEquation/" +
+                                pageEquationsPath + "/" + equation)
+
                 fileInfos.append({
                     "name": filename,
                     "url": BASE_URL + filename,
-                    "segmentedPages": segmentedPages
+                    "segmentedPages": segmentedPages,
+                    "segmentedEquations": segmentedEquations
                 })
         return jsonify(fileInfos), 200
     except Exception as e:
+        print(e)
         return jsonify({'message': 'Unable to scan files!', 'error': str(e)}), 500
 
 
 @app.route('/api/files/<string:filename>', methods=['GET'])
 def download(filename):
     try:
-        return send_from_directory(directory=app.config['UPLOAD_FOLDER'], filename=filename, as_attachment=True)
+        return send_from_directory(directory=app.config['UPLOAD_FOLDER'], filename=filename, mimetype='image/jpeg')
     except Exception as e:
         return jsonify({'message': 'Could not download the file. ' + str(e)}), 500
 
@@ -141,10 +156,23 @@ def getSegmentedPage(filename, page):
         filename = filename.partition('.')
         filename = filename[0]
         return send_from_directory(
-            directory=app.config['UPLOAD_SPLITS_FOLDER'] + "/" + filename + "/" + page + "/equations",
-            path=page + ".jpg", as_attachment=True)
+            directory=app.config['UPLOAD_SPLITS_FOLDER'] + "/" + filename + "/",
+            filename=page + ".jpg", mimetype='image/jpeg')
     except Exception as e:
         print("exception : " + str(e))
         print(app.config['UPLOAD_SPLITS_FOLDER'] +
-              "/" + filename + "/page_" + page + "/equations")
+              "/" + filename + "/" + page + ".jpg")
+        return jsonify({'message': 'Could not download the file. ' + str(e)}), 500
+
+@app.route('/api/getSegmentedEquation/<string:dirname>/<string:filename>', methods=['GET'])
+def getSegmentedEquation(dirname, filename):
+    dirname = dirname.replace('!', '\\')
+    try:
+        return send_from_directory(
+            directory=dirname,
+            filename=filename + '.jpg',
+            mimetype='image/jpeg')
+    except Exception as e:
+        print("exception : " + str(e))
+        print(dirname + "/" + filename)
         return jsonify({'message': 'Could not download the file. ' + str(e)}), 500

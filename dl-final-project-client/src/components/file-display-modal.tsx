@@ -30,9 +30,7 @@ const FileDisplayModal = ({ fileInfo }: Props) => {
                                 <img 
                                     key={key} 
                                     alt="segmented page" 
-                                    className="pageExample"
-                                    height={300} 
-                                    width={200}
+                                    className="img-fluid"
                                     src={url} 
                                 />
                             ))}
