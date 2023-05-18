@@ -12,7 +12,7 @@ def routes(app):
 
     @app.route('/emptyServer', methods=['DELETE'])
     def emptyServer():
-        return deleteAllFiles();
+        return deleteAllFiles()
 
     @app.route('/files/<string:name>', methods=['GET'])
     def download_route(name):

@@ -28,10 +28,15 @@ const FilesList = ({ fileInfos, deleteToggle, setDeleteToggle }: Props) => {
                 </button>}
             </div>
             <ul className="list-group list-group-flush">
-                {fileInfos &&
-                    fileInfos.map((fileInfo, index) => (
+                {fileInfos.map((fileInfo, index) => (
                         <div key={index}>
-                            <FileDisplayModal {... {fileInfo}} />
+                            <div className="fileLink">
+                                <a className="fileName" target="_blank" rel="noopener noreferrer" href={fileInfo.url}>{fileInfo.name}</a>
+                                <button type="button"  className="btn btn-primary" data-bs-toggle="modal" data-bs-target={`#ModalCenter${index}`}>
+                                    See form
+                                </button>
+                            </div>
+                            <FileDisplayModal {... {fileInfo, index}} />
                         </div>
                 ))}
             </ul>
