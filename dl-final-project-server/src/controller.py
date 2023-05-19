@@ -73,6 +73,7 @@ def getListFiles():
                 segmented_pages_url = os.path.join(
                     app.config['UPLOAD_SPLITS_FOLDER'], filenameNoExtensions)
 
+                # Build list of images of the file's pages
                 segmentedPages = []
                 for path in os.listdir(segmented_pages_url):
                     # check if current path is a file
@@ -80,14 +81,14 @@ def getListFiles():
                         segmentedPages.append("http://localhost:5000/getSegmentedPage/" +
                                               filenameNoExtensions + "/" + path)
 
+                # Build list of images of the file's equations
                 segmentedEquations = []
                 for path in os.listdir(segmented_pages_url):
-                    path = path.split('.')[0]
                     pageEquationsPath = os.path.join(app.config['UPLOAD_SPLITS_FOLDER'], segmented_pages_url, path, 'equations', 'crops', 'equation')
                     if os.path.isdir(pageEquationsPath):
                         for equation in os.listdir(pageEquationsPath):
                             equation = equation.split('.')[0]
-                            pageEquationsPath = pageEquationsPath.replace("\\", "!")
+                            pageEquationsPath = pageEquationsPath.replace("\\", "!") # Replace '/' with '!' in path to pass as parameter
                             segmentedEquations.append("http://localhost:5000/getSegmentedEquation/" +
                                 pageEquationsPath + "/" + equation)
 

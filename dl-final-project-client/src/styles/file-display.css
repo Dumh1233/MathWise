@@ -11,3 +11,7 @@
 .fileLink > a {
     margin-left: 50px;
 }
+
+.actionButtons > * {
+    margin: 5px;
+}

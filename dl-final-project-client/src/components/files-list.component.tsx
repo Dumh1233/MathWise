@@ -1,9 +1,11 @@
 import React from "react";
 import '../styles/files-list.css';
-import FileDisplayModal from "./file-display-modal";
+import FileDisplayModal from "./file-display-modal.component";
 import UploadService from "../services/upload-files.service";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Link } from "react-router-dom";
+
 
 interface Props {
     fileInfos: any[];
@@ -32,9 +34,16 @@ const FilesList = ({ fileInfos, deleteToggle, setDeleteToggle }: Props) => {
                         <div key={index}>
                             <div className="fileLink">
                                 <a className="fileName" target="_blank" rel="noopener noreferrer" href={fileInfo.url}>{fileInfo.name}</a>
-                                <button type="button"  className="btn btn-primary" data-bs-toggle="modal" data-bs-target={`#ModalCenter${index}`}>
-                                    See form
-                                </button>
+                                <div className="actionButtons">
+                                    <button type="button"  className="btn btn-primary" data-bs-toggle="modal" data-bs-target={`#formModal${index}`}>
+                                        See form
+                                    </button>
+                                    <Link to="/results" state={{ from: fileInfo }}>
+                                        <button type="button" className="btn btn-success">
+                                            See Results
+                                        </button>
+                                    </Link>
+                                </div>
                             </div>
                             <FileDisplayModal {... {fileInfo, index}} />
                         </div>

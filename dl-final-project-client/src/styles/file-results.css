@@ -1,0 +1,22 @@
+.backButton {
+    position: absolute;
+    left: 0;
+    top: 0;
+    margin: 20px;
+    background-color: white;
+    color: blue;
+}
+
+.filename {
+    text-align: start;
+    margin-left: 20px;
+    font-size: 90px;
+    color: white;
+    font-weight: bold;
+    -webkit-text-stroke-color: cornflowerblue;
+    -webkit-text-stroke-width: thin;
+}
+.imageContainer {
+    display: flex;
+    align-items: flex-start;
+}
