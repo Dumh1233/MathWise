@@ -2,8 +2,10 @@ import React from "react";
 import "./App.css";
 import Header from './components/header.component.tsx';
 import "bootstrap/dist/css/bootstrap.min.css";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import UploadFiles from "./components/upload-files.component";
+import FileResults from "./components/file-results.component";
 
 function App() {
   return (
@@ -12,7 +14,12 @@ function App() {
         <Header />
       </div>
       <div className="content">
-        <UploadFiles />
+        <Router>
+          <Routes>
+            <Route index path="/" element={<UploadFiles />} />
+            <Route path="/results" element={<FileResults />} />
+          </Routes>
+        </Router>
       </div>
     </div>
   );
