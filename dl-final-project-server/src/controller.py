@@ -87,12 +87,11 @@ def getListFiles():
                     if os.path.isdir(pageEquationsPath) and os.path.isdir(segmentedEquationsPath):
                         for equation in os.listdir(pageEquationsPath):
                             currentEquation = {}
+                            
                             # Get equation image
                             equation = equation.split('.')[0]
                             pageEquationsPath = pageEquationsPath.replace("\\", "!") # Replace '/' with '!' in path to pass as parameter
                             currentEquation['image'] = "http://localhost:5000/getSegmentedEquation/" + pageEquationsPath + "/" + equation
-                            # segmentedEquations.append("http://localhost:5000/getSegmentedEquation/" +
-                            #     pageEquationsPath + "/" + equation)
 
                             # Get result for equation
                             print(equation)
@@ -103,10 +102,8 @@ def getListFiles():
                                 studentAnswer = equation.split("=")[1]
                                 if equationAnswer == studentAnswer:
                                     currentEquation['result'] = 'Correct'
-                                    # return jsonify({'message': 'Correct'}), 200
                                 else:
                                     currentEquation['result'] = 'Wrong'
-                                    # return jsonify({'message': 'Wrong'}), 200
                                 segmentedEquations.append(currentEquation)
                             except Exception:
                                 print("could not parse")

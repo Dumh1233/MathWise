@@ -65,7 +65,6 @@ def end_line_array(array, a):
     list_endlines = []
     for y in range(len(array)):
         e_p, e_a = endline_word(y, array, a)
-        # print(e_p, e_a)
         if e_a >= int(1.5 * a) and e_p >= int(0.7 * a):
             list_endlines.append(y)
     return list_endlines
