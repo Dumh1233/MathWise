@@ -83,14 +83,16 @@ def getListFiles():
 
                 # Build list of images of the file's equations
                 segmentedEquations = []
-                for path in os.listdir(segmented_pages_url):
-                    pageEquationsPath = os.path.join(app.config['UPLOAD_SPLITS_FOLDER'], segmented_pages_url, path, 'equations', 'crops', 'equation')
-                    if os.path.isdir(pageEquationsPath):
-                        for equation in os.listdir(pageEquationsPath):
-                            equation = equation.split('.')[0]
-                            pageEquationsPath = pageEquationsPath.replace("\\", "!") # Replace '/' with '!' in path to pass as parameter
-                            segmentedEquations.append("http://localhost:5000/getSegmentedEquation/" +
-                                pageEquationsPath + "/" + equation)
+                for path in next(os.walk(segmented_pages_url))[1]:
+                    for subdir, dirs, files in os.walk(segmented_pages_url + '\\' + path + '\\' + 'equations\\' + 'crops\\'):
+                        for dir in dirs:
+                            pageEquationsPath = os.path.join(app.config['UPLOAD_SPLITS_FOLDER'], segmented_pages_url, path, 'equations', 'crops', dir)
+                            if os.path.isdir(pageEquationsPath):
+                                for equation in os.listdir(pageEquationsPath):
+                                    equation = equation.split('.')[0]
+                                    pageEquationsPath = pageEquationsPath.replace("\\", "!") # Replace '/' with '!' in path to pass as parameter
+                                    segmentedEquations.append("http://localhost:5000/getSegmentedEquation/" +
+                                        pageEquationsPath + "/" + equation)
 
                 fileInfos.append({
                     "name": filename,
