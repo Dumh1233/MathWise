@@ -5,3 +5,6 @@ numpy
 matplotlib
 Pillow
 pdf2image
+joblib
+scikit-image
+tensorflow

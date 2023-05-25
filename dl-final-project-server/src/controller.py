@@ -54,10 +54,8 @@ def getAnswer():
     equationAnswer = parser_equation(equation)
     studentAnswer = equation.split("=")[1]
     if equationAnswer == studentAnswer:
-        # return jsonify({'message': 'Correct:  student: ${studentAnswer} , model: ${equationAnswer}'}), 200
         return jsonify({'message': 'Correct'}), 200
     else:
-        # return jsonify({'message': 'Wrong:    student: ${studentAnswer} , model: ${equationAnswer}'}), 200
         return jsonify({'message': 'Wrong'}), 200
 
 
@@ -83,16 +81,32 @@ def getListFiles():
 
                 # Build list of images of the file's equations
                 segmentedEquations = []
-                for path in next(os.walk(segmented_pages_url))[1]:
-                    for subdir, dirs, files in os.walk(segmented_pages_url + '\\' + path + '\\' + 'equations\\' + 'crops\\'):
-                        for dir in dirs:
-                            pageEquationsPath = os.path.join(app.config['UPLOAD_SPLITS_FOLDER'], segmented_pages_url, path, 'equations', 'crops', dir)
-                            if os.path.isdir(pageEquationsPath):
-                                for equation in os.listdir(pageEquationsPath):
-                                    equation = equation.split('.')[0]
-                                    pageEquationsPath = pageEquationsPath.replace("\\", "!") # Replace '/' with '!' in path to pass as parameter
-                                    segmentedEquations.append("http://localhost:5000/getSegmentedEquation/" +
-                                        pageEquationsPath + "/" + equation)
+                for path in os.listdir(segmented_pages_url):
+                    pageEquationsPath = os.path.join(app.config['UPLOAD_SPLITS_FOLDER'], segmented_pages_url, path, 'equations', 'crops', 'equation')
+                    segmentedEquationsPath = os.path.join(app.config['UPLOAD_SPLITS_FOLDER'], segmented_pages_url, path, 'equations', 'segmentations')
+                    if os.path.isdir(pageEquationsPath) and os.path.isdir(segmentedEquationsPath):
+                        for equation in os.listdir(pageEquationsPath):
+                            currentEquation = {}
+                            
+                            # Get equation image
+                            equation = equation.split('.')[0]
+                            pageEquationsPath = pageEquationsPath.replace("\\", "!") # Replace '/' with '!' in path to pass as parameter
+                            currentEquation['image'] = "http://localhost:5000/getSegmentedEquation/" + pageEquationsPath + "/" + equation
+
+                            # Get result for equation
+                            print(equation)
+                            equation = detect(os.path.join(segmentedEquationsPath, equation))
+                            print("equation: " + equation)
+                            try:
+                                equationAnswer = parser_equation(equation)
+                                studentAnswer = equation.split("=")[1]
+                                if equationAnswer == studentAnswer:
+                                    currentEquation['result'] = 'Correct'
+                                else:
+                                    currentEquation['result'] = 'Wrong'
+                                segmentedEquations.append(currentEquation)
+                            except Exception:
+                                print("could not parse")
 
                 fileInfos.append({
                     "name": filename,
