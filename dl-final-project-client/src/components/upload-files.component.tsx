@@ -14,6 +14,7 @@ const UploadFiles = () => {
 
   useEffect(() => {
     UploadService.getFiles().then((response) => {
+      console.log(response)
       setFileInfos(response.data);
     });
   }, [deleteToggle]);
