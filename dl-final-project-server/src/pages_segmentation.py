@@ -33,9 +33,12 @@ def split_equations(file_name):
         split_jpgs_to_equations(dir_split_path + '/page_0')
     crop_equations_list = []
     for directory in next(os.walk(dir_split_path))[1]:
-        tmp_path = dir_split_path + "/" + directory + "/equations/crops/equation"
-        if os.path.isdir(tmp_path):
-            for file in [f for f in os.listdir(tmp_path) if os.path.isfile(os.path.join(tmp_path, f))]:
-                crop_equations_list.append(tmp_path + "/" + file)
+        tmp_path = dir_split_path + "/" + directory + "/equations/crops"
+        for subdir, dirs, files in os.walk(tmp_path):
+            for dir in dirs:
+                tmp_path += "/" + dir
+                if os.path.isdir(tmp_path):
+                    for file in [f for f in os.listdir(tmp_path) if os.path.isfile(os.path.join(tmp_path, f))]:
+                        crop_equations_list.append(tmp_path + "/" + file)
     print(crop_equations_list)
     return crop_equations_list
