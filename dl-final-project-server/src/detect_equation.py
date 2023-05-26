@@ -1,5 +1,4 @@
 from flask import Flask
-import tensorflow as tf
 from tensorflow.keras import models
 from PIL import Image
 import numpy as np
@@ -14,7 +13,7 @@ SEGMENTED_OUTPUT_DIR = './segmented/'
 MATH_MODEL_PATH = "\..\..\dl_models\saved_model\math_model\math_model.h5"
 FRACTION_MODEL_PATH = "\..\..\dl_models\model_check_number\kmeans_model.pkl"
 FRACTION_MODEL_LABELS = ['no_fraction', 'no_fraction', 'fraction']
-labels = ['/', '+', ',', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '=', '*', '.', '<', '>']
+labels = ['/', '+', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '=', '*', '<', '>']
 model = ''
 
 

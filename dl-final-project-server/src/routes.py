@@ -1,4 +1,4 @@
-from .controller import getAnswer, upload, getListFiles, download, remove, getSegmentedPage, deleteAllFiles, getSegmentedEquation
+from .controller import getAnswer, upload, getListFiles, download, remove, getSegmentedPage, deleteAllFiles, getQuestion
 
 
 def routes(app):
@@ -30,6 +30,6 @@ def routes(app):
     def getSegmentedPage_route(filename, page):
         return getSegmentedPage(filename, page)
 
-    @app.route('/getSegmentedEquation/<string:dirname>/<string:filename>', methods=['GET'])
-    def getSegmentedEquations_route(dirname, filename):
-        return getSegmentedEquation(dirname, filename)
+    @app.route('/getQuestion/<string:dirname>/<string:filename>', methods=['GET'])
+    def getQuestion_route(dirname, filename):
+        return getQuestion(dirname, filename)
