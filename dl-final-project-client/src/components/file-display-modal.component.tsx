@@ -21,6 +21,7 @@ const FileDisplayModal = ({ fileInfo, index }: Props) => {
                     <div>
                         {fileInfo.segmentedPages && fileInfo.segmentedPages.map((url:string,key:string)=> (
                             <img 
+                                key={key}
                                 alt="segmented page" 
                                 className="img-fluid"
                                 src={url} 

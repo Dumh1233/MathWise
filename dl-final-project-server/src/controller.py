@@ -80,7 +80,7 @@ def getListFiles():
                                               filenameNoExtensions + "/" + path)
 
                 # Build list of images of the file's equations
-                segmentedEquations = []
+                questions = []
                 
                 for path in next(os.walk(segmented_pages_url))[1]:
                     for subdir, dirs, files in os.walk(segmented_pages_url + '\\' + path + '\\' + 'equations\\' + 'crops\\'):
@@ -91,16 +91,17 @@ def getListFiles():
                             if os.path.isdir(pageEquationsPath):
                                 for equation in os.listdir(pageEquationsPath):
                                     currentEquation = {}
-
+                                    currentEquation['type'] = dir
                                     # Get equation image
                                     equation = equation.split('.')[0]
                                     pageEquationsPath = pageEquationsPath.replace("\\", "!") # Replace '/' with '!' in path to pass as parameter
-                                    currentEquation['image'] = "http://localhost:5000/getSegmentedEquation/" + pageEquationsPath + "/" + equation
+                                    currentEquation['image'] = "http://localhost:5000/getQuestion/" + pageEquationsPath + "/" + equation
 
                                     # Get result for equation
                                     print(equation)
                                     equation = detect(os.path.join(segmentedEquationsPath, equation))
                                     print("equation: " + equation)
+                                    currentEquation['parsed'] = equation
                                     try:
                                         equationAnswer = parser_equation(equation)
                                         studentAnswer = equation.split("=")[1]
@@ -111,13 +112,13 @@ def getListFiles():
                                     except Exception:
                                         print("could not parse")
                                     
-                                    segmentedEquations.append(currentEquation)
+                                    questions.append(currentEquation)
 
                 fileInfos.append({
                     "name": filename,
                     "url": BASE_URL + filename,
                     "segmentedPages": segmentedPages,
-                    "segmentedEquations": segmentedEquations
+                    "questions": questions
                 })
         return jsonify(fileInfos), 200
     except Exception as e:
@@ -128,7 +129,7 @@ def getListFiles():
 @app.route('/api/files/<string:filename>', methods=['GET'])
 def download(filename):
     try:
-        return send_from_directory(directory=app.config['UPLOAD_FOLDER'], filename=filename, mimetype='image/jpeg')
+        return send_from_directory(directory=app.config['UPLOAD_FOLDER'], path=filename, mimetype='image/jpeg')
     except Exception as e:
         return jsonify({'message': 'Could not download the file. ' + str(e)}), 500
 
@@ -176,19 +177,19 @@ def getSegmentedPage(filename_directory, page):
     try:
         return send_from_directory(
             directory=app.config['UPLOAD_SPLITS_FOLDER'] + "\\" + filename_directory,
-            filename=page + ".jpg", as_attachment=True)
+            path=page + ".jpg", as_attachment=True)
     except Exception as e:
         print("exception : " + str(e))
         print(app.config['UPLOAD_SPLITS_FOLDER'] + "\\" + filename_directory + "\\" + page + ".jpg")
         return jsonify({'message': 'Could not download the file. ' + str(e)}), 500
 
-@app.route('/api/getSegmentedEquation/<string:dirname>/<string:filename>', methods=['GET'])
-def getSegmentedEquation(dirname, filename):
+@app.route('/api/getQuestion/<string:dirname>/<string:filename>', methods=['GET'])
+def getQuestion(dirname, filename):
     dirname = dirname.replace('!', '\\')
     try:
         return send_from_directory(
             directory=dirname,
-            filename=filename + '.jpg',
+            path=filename + '.jpg',
             mimetype='image/jpeg')
     except Exception as e:
         print("exception : " + str(e))

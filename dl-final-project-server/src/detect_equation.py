@@ -13,7 +13,7 @@ app = Flask(__name__)
 SEGMENTED_OUTPUT_DIR = './segmented/'
 MATH_MODEL_PATH = "\..\..\dl_models\saved_model\math_model\math_model.h5"
 FRACTION_MODEL_PATH = "\..\..\dl_models\model_check_number\kmeans_model.pkl"
-labels = ['/', '+', ',', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '=', '*', '.', '<', '>']
+labels = ['/', '+', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '=', '*', '<', '>']
 model = ''
 
 def load_model(root_path):

@@ -2,21 +2,28 @@ import React, { useEffect, useState } from "react";
 import UploadService from "../services/upload-files.service";
 import '../styles/upload-files.css';
 import FilesList from "./files-list.component";
-import Results from "./results.component";
 import UploadButton from "./upload-button.component";
 
-const UploadFiles = () => {
+interface Props {
+  fileInfos: any;
+  setFileInfos: (param: any) => void;
+}
+
+const UploadFiles = ({ fileInfos, setFileInfos }: Props) => {
   const [selectedFiles, setSelectedFiles] = useState<any[]>([]);
   const [message, setMessage] = useState<string[]>([]);
-  const [fileInfos, setFileInfos] = useState<any[]>([]);
   const [deleteToggle, setDeleteToggle] = useState<boolean>(false);
+  const [prevDeleteToggle, setPrevDeleteToggle] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
-
+  
   useEffect(() => {
-    UploadService.getFiles().then((response) => {
-      console.log(response)
-      setFileInfos(response.data);
-    });
+    if (fileInfos.length === 0 || deleteToggle !== prevDeleteToggle) {
+      setLoading(true);
+      UploadService.getFiles().then((response) => {
+        setFileInfos(response.data);
+      });
+      setLoading(false);
+    }
   }, [deleteToggle]);
 
   const selectFiles = (event: any) => {
@@ -62,8 +69,7 @@ const UploadFiles = () => {
           )}
         </div>
       )}
-      {fileInfos.length > 0 && <FilesList {... {fileInfos, deleteToggle, setDeleteToggle}} />}
-      <Results {... { fileInfos } } />
+      {fileInfos.length > 0 && <FilesList {... {fileInfos, deleteToggle, setDeleteToggle, setPrevDeleteToggle}} />}
     </div>
   );
 }
