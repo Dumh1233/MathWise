@@ -13,21 +13,26 @@ app = Flask(__name__)
 SEGMENTED_OUTPUT_DIR = './segmented/'
 MATH_MODEL_PATH = "\..\..\dl_models\saved_model\math_model\math_model.h5"
 FRACTION_MODEL_PATH = "\..\..\dl_models\model_check_number\kmeans_model.pkl"
+FRACTION_MODEL_LABELS = ['no_fraction', 'no_fraction', 'fraction']
 labels = ['/', '+', ',', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '=', '*', '.', '<', '>']
 model = ''
+
 
 def load_model(root_path):
     path = root_path + MATH_MODEL_PATH
     return models.load_model(path)
 
+
 def hog_image(image):
     fd, hog_image = hog(image, orientations=9, pixels_per_cell=(8, 8), cells_per_block=(2, 2), visualize=True, channel_axis=-1)
     return hog_image
+
 
 def resize_image(image):
     bgr_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
     image_resize = cv2.resize(bgr_image, (64, 128))
     return image_resize
+
 
 def detect(segmented_equation_path):
     print(segmented_equation_path)
@@ -46,7 +51,8 @@ def detect(segmented_equation_path):
         fraction_image = hog_image(fraction_image)
         features = np.array(fraction_image).shape[0] * np.array(fraction_image).shape[1]
         flattened = np.array(fraction_image).reshape(1, features)
-        if knn_model.predict(flattened):
+        predict = knn_model.predict(flattened)
+        if FRACTION_MODEL_LABELS[predict[0]] != 2:
             img = i.resize((28, 28))
             im = np.asarray(img)
             im = np.reshape(im, (1, 28, 28, 1))
