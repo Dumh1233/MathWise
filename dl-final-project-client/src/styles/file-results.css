@@ -16,7 +16,49 @@
     -webkit-text-stroke-color: cornflowerblue;
     -webkit-text-stroke-width: thin;
 }
-.imageContainer {
+.questionContainer {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.questionContainer > * {
+    font-size: 40px;
+    margin-right: 20px;
+    text-align: start;
+}
+
+.accordion {
+    margin: 10px;
+    padding: 10px;
+}
+
+.accordion > * {
+    margin: 3% 0 3% 0;
+}
+
+.accordion-header {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+}
+
+.accordion-button {
+    width: fit-content;
+    font-size: larger;
+    background: none;
+    border: none;
+}
+
+.accordion-body {
+    border: 1px solid;
+    border-radius: 1%;
+    width: 100%;
+}
+
+.accordion-collapse {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
 }

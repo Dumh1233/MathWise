@@ -11,10 +11,12 @@ interface Props {
     fileInfos: any[];
     deleteToggle: boolean;
     setDeleteToggle: (param: boolean) => void;
+    setPrevDeleteToggle: (param: boolean) => void;
 }
-const FilesList = ({ fileInfos, deleteToggle, setDeleteToggle }: Props) => {
+const FilesList = ({ fileInfos, deleteToggle, setDeleteToggle, setPrevDeleteToggle }: Props) => {
     const handleEmptyServer = () => {
         UploadService.deleteAll().then(() => {
+            setPrevDeleteToggle(deleteToggle)
             setDeleteToggle(!deleteToggle);
         })
     }

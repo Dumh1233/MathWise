@@ -33,3 +33,7 @@
 .pageExampleCtr>* {
     margin: 10px;
 }
+
+.card-header {
+    background: white;
+}
