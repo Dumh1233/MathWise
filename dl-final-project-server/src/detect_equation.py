@@ -52,7 +52,7 @@ def detect(segmented_equation_path):
         flattened = np.array(fraction_image).reshape(1, features)
         predict = knn_model.predict(flattened)
         print("predict: " + str(FRACTION_MODEL_LABELS[predict[0]]))
-        if FRACTION_MODEL_LABELS[predict[0]] != 2:
+        if FRACTION_MODEL_LABELS[predict[0]] != "fraction":
             img = i.resize((28, 28))
             im = np.asarray(img)
             im = np.reshape(im, (1, 28, 28, 1))

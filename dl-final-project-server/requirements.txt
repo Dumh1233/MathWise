@@ -55,4 +55,4 @@ pdf2image
 joblib
 scikit-image
 tensorflow
-sklearn
+scikit-learn
