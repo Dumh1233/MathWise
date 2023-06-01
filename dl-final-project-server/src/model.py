@@ -252,6 +252,8 @@ def image_segmentation(filepath):
                 exit()
 
     lines = np.array(lines)
+    if len(lines) > 1:
+        lines = [(lines[0][0], lines[len(lines) - 1][1])]
     no_of_lines = len(lines)
 
     for i in range(no_of_lines):
