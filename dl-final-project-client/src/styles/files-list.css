@@ -1,7 +1,7 @@
 .filesList {
     margin: 10px;
     width: 50% !important;
-}
+ }
 
 .fileListHeader {
     display: flex;
@@ -36,4 +36,12 @@
 
 .card-header {
     background: white;
+}
+
+.spinner-border {
+    z-index: 2000;
+    position: absolute;
+    align-self: center;
+    width: 120px;
+    height: 120px;
 }

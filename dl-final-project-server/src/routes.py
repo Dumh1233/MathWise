@@ -1,10 +1,18 @@
-from .controller import getAnswer, upload, getListFiles, download, remove, getSegmentedPage, deleteAllFiles, getQuestion
+from .controller import upload, getFilePages, getQuestionsData, getListFiles, download, remove, getSegmentedPage, deleteAllFiles, getQuestion
 
 
 def routes(app):
     @app.route('/upload', methods=['POST'])
     def upload_route():
         return upload()
+
+    @app.route('/pages/<string:filename>', methods=['GET'])
+    def getFilePages_route(filename):
+        return getFilePages(filename)
+
+    @app.route('/questions/<string:filename>', methods=['GET'])
+    def getQuestionsData_route(filename):
+        return getQuestionsData(filename)
 
     @app.route('/files', methods=['GET'])
     def getListFiles_route():
@@ -21,10 +29,6 @@ def routes(app):
     @app.route('/files/<string:name>', methods=['DELETE'])
     def remove_route(name):
         return remove(name)
-
-    @app.route('/answer', methods=['GET'])
-    def getAnswer_route():
-        return getAnswer()
 
     @app.route('/getSegmentedPage/<string:filename>/<string:page>', methods=['GET'])
     def getSegmentedPage_route(filename, page):

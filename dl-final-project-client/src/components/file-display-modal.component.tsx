@@ -4,9 +4,10 @@ import '../styles/file-display.css';
 interface Props {
     fileInfo: any;
     index: number;
+    pages: string[];
 }
 
-const FileDisplayModal = ({ fileInfo, index }: Props) => {
+const FileDisplayModal = ({ fileInfo, index, pages }: Props) => {
     return (
         <div className="modal fade" id={`formModal${index}`} tabIndex={-1} role="dialog" aria-labelledby={`formModal${index}Title`} aria-hidden="true">
             <div className="modal-dialog modal-dialog-centered" role="document">
@@ -19,9 +20,9 @@ const FileDisplayModal = ({ fileInfo, index }: Props) => {
                 </div>
                 <div className="modal-body">
                     <div>
-                        {fileInfo.segmentedPages && fileInfo.segmentedPages.map((url:string,key:string)=> (
+                        {pages && pages.map((url:string)=> (
                             <img 
-                                key={key}
+                                key={url}
                                 alt="segmented page" 
                                 className="img-fluid"
                                 src={url} 

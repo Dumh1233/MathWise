@@ -7,17 +7,23 @@ from .remove_equation_line import remove_lines_from_equation
 from werkzeug.utils import secure_filename
 import os
 import shutil
+import json
 
 app = Flask(__name__)
 
 UPLOAD_FOLDER = os.path.abspath("resources/static/assets/uploads/")
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+QUESTIONS_DATA_FOLDER = os.path.abspath("questions/")
+app.config['QUESTIONS_DATA_FOLDER'] = QUESTIONS_DATA_FOLDER
+
 UPLOAD_SPLITS_FOLDER = os.path.abspath(
     "resources/static/assets/uploads_splits/")
 app.config['UPLOAD_SPLITS_FOLDER'] = UPLOAD_SPLITS_FOLDER
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(QUESTIONS_DATA_FOLDER, exist_ok=True)
+
 BASE_URL = "http://localhost:5000/files/"
 
 
@@ -50,15 +56,95 @@ def upload():
     else:
         return jsonify({'message': 'Allowed file types are txt, pdf, png, jpg, jpeg, gif, doc, docx, xls, xlsx'}), 400
 
-@app.route('/api/answer', methods=['GET'])
-def getAnswer():
-    equation = detect()
-    equationAnswer = parser_equation(equation)
-    studentAnswer = equation.split("=")[1]
-    if equationAnswer == studentAnswer:
-        return jsonify({'message': 'Correct'}), 200
+
+def _getFileNameData(filename):
+    filenameNoExtensions = filename.partition('.')
+    filenameNoExtensions = filenameNoExtensions[0]
+
+    file_splits_url = os.path.join(
+        app.config['UPLOAD_SPLITS_FOLDER'], filenameNoExtensions)
+
+    return filenameNoExtensions, file_splits_url
+
+
+@app.route('/api/pages/<string:filename>', methods=['GET'])
+def getFilePages(filename):
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    if os.path.isfile(file_path) and allowed_file(filename):
+        filenameNoExtensions, file_splits_url = _getFileNameData(filename)
     else:
-        return jsonify({'message': 'Wrong'}), 200
+        return jsonify({'message': 'Unable to scan file!'}), 500
+
+    # Build list of images of the file's pages
+    segmentedPages = []
+    for page in os.listdir(file_splits_url):
+        # check if current path is a file
+        if os.path.isdir(os.path.join(file_splits_url, page)):
+            segmentedPages.append("http://localhost:5000/getSegmentedPage/" +
+                                    filenameNoExtensions + "/" + page)
+    
+    return jsonify({'filename': filename, 'pages': segmentedPages}), 200
+
+
+def _getAnswer(equation):
+    try:
+        equationAnswer = parser_equation(equation)
+        studentAnswer = equation.split("=")[1]
+        return 'Correct' if equationAnswer == studentAnswer else 'Wrong'
+    except Exception:
+        return "could not parse"
+
+
+@app.route('/api/questions/<string:filename>', methods=['GET'])
+def getQuestionsData(filename):
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    if os.path.isfile(file_path) and allowed_file(filename):
+        filenameNoExtensions, file_splits_url = _getFileNameData(filename)
+    else:
+        return jsonify({'message': 'Unable to scan file!'}), 500
+
+    json_file_path = os.path.join(app.config['QUESTIONS_DATA_FOLDER'], filenameNoExtensions + '.json')
+
+    if os.path.isfile(json_file_path):
+        with open(json_file_path, 'r') as json_file:
+            questions_data = json.load(json_file)
+    else:
+        try: 
+            questions_data = []
+            for path in next(os.walk(file_splits_url))[1]:
+                questions_base_path = os.path.join(app.config['UPLOAD_SPLITS_FOLDER'], file_splits_url, path, 'equations')
+                crops_equations_path = os.path.join(questions_base_path, 'crops')
+                segmented_equations_path = os.path.join(questions_base_path, 'segmentations')
+                
+                for _, dirs, _ in os.walk(crops_equations_path):
+                    for dir in dirs:
+                        page_equations_path = os.path.join(crops_equations_path, dir)
+
+                        if os.path.isdir(page_equations_path):
+                            for equation in os.listdir(page_equations_path):
+                                currentQuestionData = {}
+                                currentQuestionData['type'] = dir
+                                # Get equation image
+                                equation = equation.split('.')[0]
+                                page_equations_path = page_equations_path.replace("\\", "!") # Replace '/' with '!' in path to pass as parameter
+                                currentQuestionData['image'] = "http://localhost:5000/getQuestion/" + page_equations_path + "/" + equation
+
+                                # Get result for equation
+                                print(equation)
+                                equation = detect(os.path.join(segmented_equations_path, equation))
+                                print("equation: " + equation)
+
+                                currentQuestionData['parsed'] = equation
+                                currentQuestionData['result'] = _getAnswer(equation)
+
+                                questions_data.append(currentQuestionData)
+
+                                with open(json_file_path, 'w') as json_file:
+                                    json.dump(questions_data, json_file)
+        except Exception as e:
+            return jsonify({'message': 'Could not get questions data!', 'error': str(e)}), 500
+        
+    return jsonify({'filename': filename, 'questions_data': questions_data}), 200
 
 
 @app.route('/api/files', methods=['GET'])
@@ -66,62 +152,11 @@ def getListFiles():
     try:
         fileInfos = []
         for filename in os.listdir(app.config['UPLOAD_FOLDER']):
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            if os.path.isfile(file_path) and allowed_file(filename):
-                filenameNoExtensions = filename.partition('.')
-                filenameNoExtensions = filenameNoExtensions[0]
-                segmented_pages_url = os.path.join(
-                    app.config['UPLOAD_SPLITS_FOLDER'], filenameNoExtensions)
+            fileInfos.append({
+                "name": filename,
+                "url": BASE_URL + filename,
+            })
 
-                # Build list of images of the file's pages
-                segmentedPages = []
-                for path in os.listdir(segmented_pages_url):
-                    # check if current path is a file
-                    if os.path.isdir(os.path.join(segmented_pages_url, path)):
-                        segmentedPages.append("http://localhost:5000/getSegmentedPage/" +
-                                              filenameNoExtensions + "/" + path)
-
-                # Build list of images of the file's equations
-                questions = []
-                
-                for path in next(os.walk(segmented_pages_url))[1]:
-                    for subdir, dirs, files in os.walk(segmented_pages_url + '\\' + path + '\\' + 'equations\\' + 'crops\\'):
-                        for dir in dirs:
-                            pageEquationsPath = os.path.join(app.config['UPLOAD_SPLITS_FOLDER'], segmented_pages_url, path, 'equations', 'crops', dir)
-                            segmentedEquationsPath = os.path.join(app.config['UPLOAD_SPLITS_FOLDER'], segmented_pages_url, path, 'equations', 'segmentations')
-
-                            if os.path.isdir(pageEquationsPath):
-                                for equation in os.listdir(pageEquationsPath):
-                                    currentEquation = {}
-                                    currentEquation['type'] = dir
-                                    # Get equation image
-                                    equation = equation.split('.')[0]
-                                    pageEquationsPath = pageEquationsPath.replace("\\", "!") # Replace '/' with '!' in path to pass as parameter
-                                    currentEquation['image'] = "http://localhost:5000/getQuestion/" + pageEquationsPath + "/" + equation
-
-                                    # Get result for equation
-                                    print(equation)
-                                    equation = detect(os.path.join(segmentedEquationsPath, equation))
-                                    print("equation: " + equation)
-                                    currentEquation['parsed'] = equation
-                                    try:
-                                        equationAnswer = parser_equation(equation)
-                                        studentAnswer = equation.split("=")[1]
-                                        if equationAnswer == studentAnswer:
-                                            currentEquation['result'] = 'Correct'
-                                        else:
-                                            currentEquation['result'] = 'Wrong'
-                                    except Exception:
-                                        print("could not parse")
-                                    
-                                    questions.append(currentEquation)
-
-                fileInfos.append({
-                    "name": filename,
-                    "url": BASE_URL + filename,
-                    "segmentedPages": segmentedPages,
-                    "questions": questions
-                })
         return jsonify(fileInfos), 200
     except Exception as e:
         print(e)
