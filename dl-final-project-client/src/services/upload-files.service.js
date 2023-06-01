@@ -14,10 +14,6 @@ class UploadFilesService {
     });
   }
 
-  getFiles() {
-    return http.get("/files");
-  }
-
   deleteAll() {
     return http.delete("/emptyServer");
   }

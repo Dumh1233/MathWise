@@ -18,7 +18,7 @@ const App = () => {
         <Router>
           <Routes>
             <Route index path="/" element={<UploadFiles {... { fileInfos, setFileInfos }} />} />
-            <Route path="/results" element={<FileResults />} />
+            <Route path="/results" element={<FileResults {... { fileInfos }} />} />
           </Routes>
         </Router>
       </div>

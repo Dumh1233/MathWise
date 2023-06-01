@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import UploadService from "../services/upload-files.service";
+import GetFilesDataService from "../services/get-files-data.service";
 import '../styles/upload-files.css';
 import FilesList from "./files-list.component";
 import UploadButton from "./upload-button.component";
@@ -19,7 +20,7 @@ const UploadFiles = ({ fileInfos, setFileInfos }: Props) => {
   useEffect(() => {
     if (fileInfos.length === 0 || deleteToggle !== prevDeleteToggle) {
       setLoading(true);
-      UploadService.getFiles().then((response) => {
+      GetFilesDataService.getFiles().then((response) => {
         setFileInfos(response.data);
       });
       setLoading(false);
@@ -35,7 +36,7 @@ const UploadFiles = ({ fileInfos, setFileInfos }: Props) => {
     UploadService.upload(file, (event: any) => {})
       .then((response) => {
         setMessage(message => [...message, "Successfully uploaded: " + file.name]);
-        return UploadService.getFiles();
+        return GetFilesDataService.getFiles();
       })
       .then((files) => {
         setFileInfos(files.data);
@@ -69,7 +70,7 @@ const UploadFiles = ({ fileInfos, setFileInfos }: Props) => {
           )}
         </div>
       )}
-      {fileInfos.length > 0 && <FilesList {... {fileInfos, deleteToggle, setDeleteToggle, setPrevDeleteToggle}} />}
+      {fileInfos.length > 0 && <FilesList {... {fileInfos, setFileInfos, deleteToggle, setDeleteToggle, setPrevDeleteToggle}} />}
     </div>
   );
 }
