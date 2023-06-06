@@ -62,3 +62,8 @@
     align-items: center;
     width: 100%;
 }
+
+table {
+    table-layout: fixed;
+    justify-content: center;
+}
