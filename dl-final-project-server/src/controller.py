@@ -50,7 +50,8 @@ def upload():
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         for file in split_equations(filename):
-            remove_lines_from_equation(file)
+            if ("shape" not in file):
+                remove_lines_from_equation(file)
             image_segmentation(file)
         return jsonify({'message': 'File uploaded successfully', 'filename': filename}), 200
     else:
