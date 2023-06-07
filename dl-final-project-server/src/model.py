@@ -1,8 +1,10 @@
 import numpy as np
 import cv2
 import os
+from .remove_equation_line import remove_lines_from_equation
 
 MAXIMUM_LINE_HEIGHT = 15
+
 
 def line_array(array):
     list_x_upper = []
@@ -249,8 +251,9 @@ def letter_segmentation(lines_img, x_lines, i, base_img_lines, dir_path):
             letter_img = letter_img_tmp
             if letter_img.any():
                 letter_img = cv2.bitwise_not(letter_img_tmp)
-                cv2.imwrite(dir_path + "/" + str(i + 1) + '_' + str(word) + '_' +
-                            str(letter_index) + '.jpg', 255 - letter_img)
+                file_name = dir_path + "/" + str(i + 1) + '_' + str(word) + '_' + str(letter_index) + '.jpg'
+                cv2.imwrite(file_name, 255 - letter_img)
+                remove_lines_from_equation(file_name)
         else:
             x_linescopy.pop(0)
             word += 1
@@ -260,8 +263,9 @@ def letter_segmentation(lines_img, x_lines, i, base_img_lines, dir_path):
             letter_img_tmp = cv2.bitwise_not(letter_img_tmp)
             if letter_img_tmp is not None and letter_img_tmp.any():
                 letter_img = cv2.resize(letter_img_tmp, dsize=(28, 28), interpolation=cv2.INTER_AREA)
-                cv2.imwrite(dir_path + "/" + str(i + 1) + '_' + str(word) + '_' +
-                            str(letter_index) + '.jpg', 255 - letter_img)
+                file_name = dir_path + "/" + str(i + 1) + '_' + str(word) + '_' + str(letter_index) + '.jpg'
+                cv2.imwrite(file_name, 255 - letter_img)
+                remove_lines_from_equation(file_name)
 
 
 def is_line_to_char(start_line, end_line, count_y):
