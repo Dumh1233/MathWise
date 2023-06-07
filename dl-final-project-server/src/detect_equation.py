@@ -1,5 +1,5 @@
 from flask import Flask
-from tensorflow.keras import models
+from tensorflow import keras
 from PIL import Image
 import numpy as np
 import os
@@ -19,7 +19,7 @@ model = ''
 
 def load_model(root_path):
     path = root_path + MATH_MODEL_PATH
-    return models.load_model(path)
+    return keras.models.load_model(path)
 
 
 def hog_image(image):

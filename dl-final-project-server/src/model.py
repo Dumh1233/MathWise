@@ -1,6 +1,9 @@
 import numpy as np
 import cv2
 import os
+from .remove_equation_line import remove_lines_from_equation
+
+MAXIMUM_LINE_HEIGHT = 15
 
 
 def line_array(array):
@@ -49,6 +52,52 @@ def endline(y, array):
     return count_ahead, count_prev
 
 
+def line_removal_array(array):
+    list_x_upper = []
+    list_x_lower = []
+    for y in range(0, len(array)):
+        s_a, s_p = strtlineToRemove(y, array)
+        e_a, e_p = endlineToRemove(y, array)
+        if s_a >= 1 and s_p >= 1:
+            list_x_upper.append(y)
+        if e_a >= 1 and e_p >= 1:
+            list_x_lower.append(y)
+
+    return list_x_upper, list_x_lower
+
+
+def strtlineToRemove(y, array):
+    count_ahead = 0
+    count_prev = 0
+    if y < 3:
+        count_prev = 3 - y
+    for i in array[y:y + 3]:
+        if (i > 0) and (i < MAXIMUM_LINE_HEIGHT):
+            count_ahead += 1
+
+    for i in array[y - 3:y]:
+        if i == 0 or i >= MAXIMUM_LINE_HEIGHT:
+            count_prev += 1
+
+    return count_ahead, count_prev
+
+
+def endlineToRemove(y, array):
+    count_ahead = 0
+    count_prev = 0
+    if len(array) - y < 3:
+        count_ahead = 3 - (len(array) - y)
+    for i in array[y:y + 3]:
+        if i == 0 or i >= MAXIMUM_LINE_HEIGHT:
+            count_ahead += 1
+
+    for i in array[y - 3:y]:
+        if (i > 0) and (i < MAXIMUM_LINE_HEIGHT):
+            count_prev += 1
+
+    return count_ahead, count_prev
+
+
 def endline_word(y, array, a):
     count_ahead = 0
     count_prev = 0
@@ -91,8 +140,29 @@ def refine_array(array_upper, array_lower):
         if array_lower[y] + 5 < array_lower[y + 1]:
             lowerlines.append(array_lower[y] + 10)
 
-    upperlines.append(max(array_upper[-1] - 10, 0))
-    lowerlines.append(array_lower[-1] + 10)
+    if len(array_upper) > 0:
+        upperlines.append(max(array_upper[-1] - 10, 0))
+
+    if len(array_lower) > 0:
+        lowerlines.append(array_lower[-1] + 10)
+
+    return upperlines, lowerlines
+
+
+def refine_line_removal_array(array_upper, array_lower):
+    upperlines = []
+    lowerlines = []
+    for y in range(len(array_upper) - 1):
+        if array_upper[y] + 5 < array_upper[y + 1]:
+            upperlines.append(max(array_upper[y] - 5, 0))
+    for y in range(len(array_lower) - 1):
+        if array_lower[y] + 5 < array_lower[y + 1]:
+            lowerlines.append(array_lower[y] + 5)
+
+    if len(array_upper) > 0:
+        upperlines.append(max(array_upper[-1] - 5, 0))
+    if len(array_lower) > 0:
+        lowerlines.append(array_lower[-1] + 5)
 
     return upperlines, lowerlines
 
@@ -181,8 +251,9 @@ def letter_segmentation(lines_img, x_lines, i, base_img_lines, dir_path):
             letter_img = letter_img_tmp
             if letter_img.any():
                 letter_img = cv2.bitwise_not(letter_img_tmp)
-                cv2.imwrite(dir_path + "/" + str(i + 1) + '_' + str(word) + '_' +
-                            str(letter_index) + '.jpg', 255 - letter_img)
+                file_name = dir_path + "/" + str(i + 1) + '_' + str(word) + '_' + str(letter_index) + '.jpg'
+                cv2.imwrite(file_name, 255 - letter_img)
+                remove_lines_from_equation(file_name)
         else:
             x_linescopy.pop(0)
             word += 1
@@ -190,11 +261,29 @@ def letter_segmentation(lines_img, x_lines, i, base_img_lines, dir_path):
             letter_img_tmp = base_img_lines[i][letter[e][1] - 5:letter[e][1] + letter[e][3] + 5,
                              letter[e][0] - 5:letter[e][0] + letter[e][2] + 5]
             letter_img_tmp = cv2.bitwise_not(letter_img_tmp)
-            letter_img = cv2.resize(letter_img_tmp, dsize=(
-                28, 28), interpolation=cv2.INTER_AREA)
-            if letter_img.any():
-                cv2.imwrite(dir_path + "/" + str(i + 1) + '_' + str(word) + '_' +
-                            str(letter_index) + '.jpg', 255 - letter_img)
+            if letter_img_tmp is not None and letter_img_tmp.any():
+                letter_img = cv2.resize(letter_img_tmp, dsize=(28, 28), interpolation=cv2.INTER_AREA)
+                file_name = dir_path + "/" + str(i + 1) + '_' + str(word) + '_' + str(letter_index) + '.jpg'
+                cv2.imwrite(file_name, 255 - letter_img)
+                remove_lines_from_equation(file_name)
+
+
+def is_line_to_char(start_line, end_line, count_y):
+    count = 0
+    before = start_line
+    past = end_line
+
+    if before < 5:
+        count = 5 - before
+    for i in count_y[past:past + 5]:
+        if i > MAXIMUM_LINE_HEIGHT:
+            count += 1
+
+    for i in count_y[before - 5:before]:
+        if i > MAXIMUM_LINE_HEIGHT:
+            count += 1
+
+    return count > 2
 
 
 def image_segmentation(filepath):
@@ -232,7 +321,8 @@ def image_segmentation(filepath):
 
     upper_lines, lower_lines = line_array(count_x)
     upperlines, lowerlines = refine_array(upper_lines, lower_lines)
-    lowerlines[-1] = min(lower_lines[-1], height - 1)
+    if len(lower_lines) > 0:
+        lowerlines[-1] = min(lower_lines[-1], height - 1)
 
     if len(upperlines) == len(lowerlines):
         lines = []
@@ -243,13 +333,7 @@ def image_segmentation(filepath):
         for y in range(len(upperlines)):
             lines.append((upperlines[y], lowerlines[y]))
     else:
-        print("Too much noise in image, unable to process.\nPlease try with another image. Ctrl-C to exit:- ")
-        k = cv2.waitKey(0)
-        while 1:
-            k = cv2.waitKey(0)
-            if k & 0xFF == ord('q'):
-                cv2.destroyAllWindows()
-                exit()
+        return
 
     lines = np.array(lines)
     if len(lines) > 1:
@@ -259,6 +343,40 @@ def image_segmentation(filepath):
     for i in range(no_of_lines):
         lines_img.append(morph_copy[lines[i][0]:lines[i][1], :])
         base_img_lines.append(src_img[lines[i][0]:lines[i][1], :])
+
+        count_y = np.zeros(shape=width)
+        row_min_height = lines[i][0]
+        row_max_height = lines[i][1]
+        row_height = (row_max_height - row_min_height)
+        row_start_height = int((row_max_height - row_min_height) * 0.75)
+        count_y_top = np.zeros(shape=width)
+        for y in range(row_height):
+            for x in range(width):
+                if lines_img[i][y][x] == pixel_set:
+                    count_y[x] += 1
+                    if y < row_start_height:
+                        count_y_top[x] += 1
+
+        for x in range(len(count_y_top)):
+            if count_y_top[x] > 0:
+                count_y[x] = row_height
+
+        start_lines, end_lines = line_removal_array(count_y)
+        startlines, endlines = refine_line_removal_array(start_lines, end_lines)
+        if len(endlines) > 0:
+            endlines[-1] = min(endlines[-1], width - 1)
+
+        if len(startlines) == len(endlines):
+            lines_in_lines = []
+            for y in range(len(startlines)):
+                if is_line_to_char(startlines[y], endlines[y], count_y):
+                    lines_in_lines.append((startlines[y], endlines[y]))
+
+            for line in lines_in_lines:
+                for x in range(line[0], line[1]):
+                    for y in range(row_start_height, row_height):
+                        base_img_lines[i][y][x] = 255
+                        lines_img[i][y][x] = 0
 
     contours, hierarchy = cv2.findContours(
         morph_copy, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
