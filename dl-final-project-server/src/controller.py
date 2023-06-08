@@ -4,6 +4,7 @@ from .detect_equation import detect
 from .calculator import parser_equation
 from .pages_segmentation import split_equations
 from werkzeug.utils import secure_filename
+from .image_enhancer import image_enhancer
 import os
 import shutil
 import json
@@ -49,6 +50,7 @@ def upload():
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         for file in split_equations(filename):
+            image_enhancer(file)
             image_segmentation(file)
         return jsonify({'message': 'File uploaded successfully', 'filename': filename}), 200
     else:
