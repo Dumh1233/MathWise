@@ -87,8 +87,7 @@ def getFilePages(filename):
 def _getAnswer(equation):
     try:
         equationAnswer = parser_equation(equation)
-        studentAnswer = equation.split("=")[1]
-        return 'Correct' if equationAnswer == studentAnswer else 'Wrong'
+        return 'Correct' if equationAnswer else 'Wrong'
     except Exception:
         return "could not parse"
 
@@ -195,6 +194,7 @@ def deleteAllFiles():
         print('deleted ' + splits_path)
 
         file_list = os.listdir(app.config['UPLOAD_FOLDER'])
+        questions_list = os.listdir(app.config['QUESTIONS_DATA_FOLDER'])
 
         # Loop through the file list and delete each file
         for file_name in file_list:
@@ -202,6 +202,12 @@ def deleteAllFiles():
             os.remove(file_path)
             print('deleted ' + file_path)
 
+        # Loop through the file list and delete each file
+        for file_name in questions_list:
+            file_path = os.path.join(app.config['QUESTIONS_DATA_FOLDER'], file_name)
+            os.remove(file_path)
+            print('deleted ' + file_path)
+            
         return jsonify({'message': 'All files deleted.'}), 200
     except Exception as e:
         return jsonify({'message': 'Could not delete files. ' + str(e)}), 500

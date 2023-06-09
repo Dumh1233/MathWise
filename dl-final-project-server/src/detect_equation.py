@@ -51,7 +51,6 @@ def detect(segmented_equation_path):
         features = np.array(fraction_image).shape[0] * np.array(fraction_image).shape[1]
         flattened = np.array(fraction_image).reshape(1, features)
         predict = knn_model.predict(flattened)
-        print("predict: " + str(FRACTION_MODEL_LABELS[predict[0]]))
         # if FRACTION_MODEL_LABELS[predict[0]] != "fraction":
         if True:
             img = i.resize((28, 28))

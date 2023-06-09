@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useLocation } from 'react-router-dom'
 import { useNavigate } from "react-router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faChevronDown, faCircleXmark, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faCircleXmark, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 import '../styles/file-results.css';
 
 interface Question {
@@ -49,8 +49,8 @@ const FileResults = ({ fileInfos }: Props) => {
                             </th>
                             <th scope="row">{q.parsed}</th>
                             <th scope="row">
-                                {q.result &&  q.result == "Correct" ? <FontAwesomeIcon icon={faCheckCircle} style={{ color: 'green', fontSize: '30px' }}/> : 
-                                    (q.result == "Wrong" ? <FontAwesomeIcon icon={faCircleXmark} style={{ color: 'red', fontSize: '30px' }}/> : <span>None</span>)
+                                {q.result &&  q.result === "Correct" ? <FontAwesomeIcon icon={faCheckCircle} style={{ color: 'green', fontSize: '30px' }}/> : 
+                                    (q.result === "Wrong" ? <FontAwesomeIcon icon={faCircleXmark} style={{ color: 'red', fontSize: '30px' }}/> : <span>None</span>)
                                 }
                             </th>
                         </tr>
