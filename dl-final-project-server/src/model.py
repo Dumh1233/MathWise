@@ -3,7 +3,7 @@ import cv2
 import os
 from .remove_equation_line import remove_lines_from_equation
 
-MAXIMUM_LINE_HEIGHT = 15
+MAXIMUM_LINE_HEIGHT = 20
 
 
 def line_array(array):
@@ -348,7 +348,7 @@ def image_segmentation(filepath):
         row_min_height = lines[i][0]
         row_max_height = lines[i][1]
         row_height = (row_max_height - row_min_height)
-        row_start_height = int((row_max_height - row_min_height) * 0.75)
+        row_start_height = int((row_max_height - row_min_height) * 0.60)
         count_y_top = np.zeros(shape=width)
         for y in range(row_height):
             for x in range(width):
