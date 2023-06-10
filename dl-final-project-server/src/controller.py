@@ -3,7 +3,6 @@ from .model import image_segmentation
 from .detect_equation import detect
 from .calculator import parser_equation
 from .pages_segmentation import split_equations
-from .remove_equation_line import remove_lines_from_equation
 from werkzeug.utils import secure_filename
 import os
 import shutil
@@ -50,8 +49,6 @@ def upload():
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         for file in split_equations(filename):
-            if ("shape" not in file):
-                remove_lines_from_equation(file)
             image_segmentation(file)
         return jsonify({'message': 'File uploaded successfully', 'filename': filename}), 200
     else:
@@ -90,8 +87,7 @@ def getFilePages(filename):
 def _getAnswer(equation):
     try:
         equationAnswer = parser_equation(equation)
-        studentAnswer = equation.split("=")[1]
-        return 'Correct' if equationAnswer == studentAnswer else 'Wrong'
+        return 'Correct' if equationAnswer else 'Wrong'
     except Exception:
         return "could not parse"
 
@@ -120,7 +116,7 @@ def getQuestionsData(filename):
                 for _, dirs, _ in os.walk(crops_equations_path):
                     for dir in dirs:
                         page_equations_path = os.path.join(crops_equations_path, dir)
-
+                        print("page_equations_path: " + page_equations_path)
                         if os.path.isdir(page_equations_path):
                             for equation in os.listdir(page_equations_path):
                                 currentQuestionData = {}
@@ -131,9 +127,8 @@ def getQuestionsData(filename):
                                 currentQuestionData['image'] = "http://localhost:5000/getQuestion/" + page_equations_path + "/" + equation
 
                                 # Get result for equation
-                                print(equation)
-                                equation = detect(os.path.join(segmented_equations_path, equation))
-                                print("equation: " + equation)
+                                is_shape = "shape" in dir
+                                equation = detect(os.path.join(segmented_equations_path, equation), is_shape)
 
                                 currentQuestionData['parsed'] = equation
                                 currentQuestionData['result'] = _getAnswer(equation)
@@ -198,6 +193,7 @@ def deleteAllFiles():
         print('deleted ' + splits_path)
 
         file_list = os.listdir(app.config['UPLOAD_FOLDER'])
+        questions_list = os.listdir(app.config['QUESTIONS_DATA_FOLDER'])
 
         # Loop through the file list and delete each file
         for file_name in file_list:
@@ -205,6 +201,12 @@ def deleteAllFiles():
             os.remove(file_path)
             print('deleted ' + file_path)
 
+        # Loop through the file list and delete each file
+        for file_name in questions_list:
+            file_path = os.path.join(app.config['QUESTIONS_DATA_FOLDER'], file_name)
+            os.remove(file_path)
+            print('deleted ' + file_path)
+            
         return jsonify({'message': 'All files deleted.'}), 200
     except Exception as e:
         return jsonify({'message': 'Could not delete files. ' + str(e)}), 500

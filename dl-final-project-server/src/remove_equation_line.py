@@ -1,8 +1,8 @@
 from PIL import Image
 
-MINIMUM_LINE_HEIGHT = 4
-MINIMUM_LINE_WIDTH = 25
-WHITE_RGB = (255, 255, 255)
+MINIMUM_LINE_HEIGHT = 1
+MINIMUM_LINE_WIDTH = 75
+WHITE_RGB = 255
 
 """
 Returns the height from the starting_y variable until the pixel is white or the end of the image height.
@@ -70,13 +70,14 @@ Returns the new pixel array with the removed lines.
 
 
 def scan_image(pix, width, height):
+    quarter_image_height = int(height / 4)
     for x in range(width):
-        for y in range(height):
-            if pix[x, y] != WHITE_RGB:
-                line_width = get_line(pix, width, height, x, y)
+        for y in range(quarter_image_height):
+            if pix[x, y + (3 * quarter_image_height)] != WHITE_RGB:
+                line_width = get_line(pix, width, height, x, y + (3 * quarter_image_height))
                 if line_width == -1:
                     continue
-                pix = remove_line(pix, x, y, line_width)
+                pix = remove_line(pix, x, y + (3 * quarter_image_height), line_width)
     return pix
 
 
