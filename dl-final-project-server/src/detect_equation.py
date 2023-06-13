@@ -12,7 +12,7 @@ app = Flask(__name__)
 SEGMENTED_OUTPUT_DIR = './segmented/'
 MATH_MODEL_PATH = "\..\..\dl_models\saved_model\math_model\math_model.h5"
 FRACTION_MODEL_PATH = "\..\..\dl_models\model_check_number\kmeans_model.pkl"
-FRACTION_MODEL_LABELS = ['no_fraction', 'no_fraction', 'fraction']
+FRACTION_MODEL_LABELS = ['fraction', 'no_fraction', 'no_fraction', 'no_fraction']
 labels = ['/', '+', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '=', '*', '<', '>']
 model = ''
 
@@ -51,8 +51,8 @@ def detect(segmented_equation_path):
         features = np.array(fraction_image).shape[0] * np.array(fraction_image).shape[1]
         flattened = np.array(fraction_image).reshape(1, features)
         predict = knn_model.predict(flattened)
-        # if FRACTION_MODEL_LABELS[predict[0]] != "fraction":
-        if True:
+        print("predict: " + str(FRACTION_MODEL_LABELS[predict[0]]))
+        if FRACTION_MODEL_LABELS[predict[0]] != "fraction":
             img = i.resize((28, 28))
             im = np.asarray(img)
             im = np.reshape(im, (1, 28, 28, 1))
