@@ -4,6 +4,7 @@ from .detect_equation import detect
 from .calculator import parser_equation
 from .pages_segmentation import split_equations
 from werkzeug.utils import secure_filename
+from .image_enhancer import image_enhancer
 import os
 import shutil
 import json
@@ -49,6 +50,7 @@ def upload():
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         for file in split_equations(filename):
+            image_enhancer(file)
             image_segmentation(file)
         return jsonify({'message': 'File uploaded successfully', 'filename': filename}), 200
     else:
@@ -87,8 +89,7 @@ def getFilePages(filename):
 def _getAnswer(equation):
     try:
         equationAnswer = parser_equation(equation)
-        studentAnswer = equation.split("=")[1]
-        return 'Correct' if equationAnswer == studentAnswer else 'Wrong'
+        return 'Correct' if equationAnswer else 'Wrong'
     except Exception:
         return "could not parse"
 
@@ -195,6 +196,7 @@ def deleteAllFiles():
         print('deleted ' + splits_path)
 
         file_list = os.listdir(app.config['UPLOAD_FOLDER'])
+        questions_list = os.listdir(app.config['QUESTIONS_DATA_FOLDER'])
 
         # Loop through the file list and delete each file
         for file_name in file_list:
@@ -202,6 +204,12 @@ def deleteAllFiles():
             os.remove(file_path)
             print('deleted ' + file_path)
 
+        # Loop through the file list and delete each file
+        for file_name in questions_list:
+            file_path = os.path.join(app.config['QUESTIONS_DATA_FOLDER'], file_name)
+            os.remove(file_path)
+            print('deleted ' + file_path)
+            
         return jsonify({'message': 'All files deleted.'}), 200
     except Exception as e:
         return jsonify({'message': 'Could not delete files. ' + str(e)}), 500
