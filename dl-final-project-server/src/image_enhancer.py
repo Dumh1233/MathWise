@@ -1,6 +1,6 @@
 import requests
 
-API_KEY = 'wx5ag9jsleownpmfr'
+API_KEY = 'wxmgo8a958boikw42'
 
 
 def get_image_enhancer(image_path):

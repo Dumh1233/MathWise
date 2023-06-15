@@ -75,16 +75,24 @@ def detect(segmented_equation_path):
                     brackets_opened -= 1
                 index -= 1
 
-            equation = equation[:index+1] + "(" + equation[index+1:]
-            special_fraction_flag = False
-            if equation[-1] != '(':
-                special_fraction_flag = True
-                equation += "+("
-            equation += labels[np.argmax(model.predict(numerator_img))]
-            equation += "/"
-            equation += labels[np.argmax(model.predict(denomenator_img))]
-            equation += ")"
-            if special_fraction_flag:
+            pred_numerator = labels[np.argmax(model.predict(numerator_img))]
+            pred_denomenator = labels[np.argmax(model.predict(denomenator_img))]
+            if "0" in pred_numerator and "0" in pred_denomenator:
+                equation += "8"
+            elif "0" in pred_denomenator:
+                equation += pred_numerator
+            else:
+                equation = equation[:index + 1] + "(" + equation[index + 1:]
+                special_fraction_flag = False
+                if equation[-1] != '(':
+                    special_fraction_flag = True
+                    equation += "+("
+
+                equation += labels[np.argmax(model.predict(numerator_img))]
+                equation += "/"
+                equation += labels[np.argmax(model.predict(denomenator_img))]
                 equation += ")"
+                if special_fraction_flag:
+                    equation += ")"
 
     return equation
