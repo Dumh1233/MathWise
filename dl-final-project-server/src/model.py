@@ -311,7 +311,9 @@ def image_segmentation(filepath):
     dir_path = filepath.rsplit("/", 3)[0] + "/segmentations/" + filepath.split("/")[-1].split(".")[0]
     os.makedirs(dir_path, exist_ok=True)
     print("\nStart Segmentation Pre-Processing \n")
-    src_img = cv2.imread(filepath, cv2.IMREAD_GRAYSCALE)
+    # src_img = cv2.imread(filepath, cv2.IMREAD_GRAYSCALE)
+    src_img = cv2.imread(filepath)
+    src_img = cv2.cvtColor(src_img, cv2.COLOR_BGR2GRAY)
     orig_height, orig_width = src_img.shape
 
     height = int(width * orig_height / orig_width)

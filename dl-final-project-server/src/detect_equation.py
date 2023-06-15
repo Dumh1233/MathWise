@@ -45,8 +45,59 @@ def resize_image(image):
     image_resize = cv2.resize(bgr_image, (64, 128))
     return image_resize
 
+def preprocess_shape_image(img):
+    # Convert the image to grayscale
+    img_gray = img.convert('L')
+
+    # Convert the grayscale image to a numpy array
+    img_array = np.array(img_gray)
+
+    # Applying Gaussian blur to remove noise
+    blur = cv2.GaussianBlur(img_array, (11, 11), 0)
+
+    # Setting threshold of gray image
+    _, threshold = cv2.threshold(blur, 250, 255, cv2.THRESH_BINARY_INV)
+
+    # Using findContours() function with RETR_EXTERNAL and CHAIN_APPROX_SIMPLE flags
+    contours, _ = cv2.findContours(
+        threshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Create a mask to store the foreground (shape) pixels
+    mask = np.zeros_like(img_array)
+
+    # Iterate through the contours and draw the shapes on the mask
+    for contour in contours:
+        # Approximate the contour to get the shape type
+        perimeter = cv2.arcLength(contour, True)
+        epsilon = 0.01 * perimeter
+        approx = cv2.approxPolyDP(contour, epsilon, True)
+
+        # Get the number of sides of the shape
+        sides = len(approx)
+
+        if sides == 3:
+            # Fill the triangle contour on the mask
+            cv2.drawContours(mask, [contour], 0, 255, -1)
+        elif sides >= 4:
+            # Fill the rectangle contour on the mask
+            cv2.drawContours(mask, [contour], 0, 255, -1)
+        else:
+            # Fill the circle contour on the mask
+            (x, y), radius = cv2.minEnclosingCircle(contour)
+            center = (int(x), int(y))
+            radius = int(radius)
+            cv2.circle(mask, center, radius, 255, -1)
+
+    # Apply the mask to the original image to extract the foreground (shape) pixels
+    result = cv2.bitwise_and(img_array, img_array, mask=mask)
+
+    # Add an additional dimension to the image array
+    result = np.expand_dims(result, axis=-1)
+
+    return result
 
 def _predict_shape(image, model):
+  image = preprocess_shape_image(image)
   image = np.array(image)
   resized_image = resize(image, (224, 224, 1))
   expanded_image = resized_image[np.newaxis, ...] * 255.0
@@ -66,12 +117,12 @@ def detect_shape(segmented_images, paths):
         equation = ''
 
         # Predict shape part
-        shape_image = segmented_images[1]
+        shape_image = segmented_images[0]
         shape_prediction = _predict_shape(shape_image, shape_model)
         shape_prediction = [value for value in SHAPE_MODEL_LABELS if SHAPE_MODEL_LABELS[value] == shape_prediction][0]
 
         # Predict fraction part
-        fraction_image = segmented_images[0]
+        fraction_image = segmented_images[1]
 
         numerator_img = fraction_image.crop((0, 0, fraction_image.width, fraction_image.height/2))
         denomenator_img = fraction_image.crop((0, fraction_image.height/2, fraction_image.width, fraction_image.height))

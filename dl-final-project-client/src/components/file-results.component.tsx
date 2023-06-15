@@ -33,10 +33,17 @@ const FileResults = ({ fileInfos }: Props) => {
         let numOfWrongAnswers = 0;
         let numOfCorrectAnswers = 0;
         for(let i = 0; i<fileInfo.questionsData.length;i++){
+<<<<<<< Updated upstream
             if(fileInfo.questionsData[i].result == "Wrong"){
                 numOfWrongAnswers++;
             }
             if(fileInfo.questionsData[i].result == "Correct"){
+=======
+            if(fileInfo.questionsData[i].result === "Wrong"){
+                numOfWrongAnswers++;
+            }
+            if(fileInfo.questionsData[i].result === "Correct"){
+>>>>>>> Stashed changes
                 numOfCorrectAnswers++;
             }
         }
@@ -52,7 +59,11 @@ const FileResults = ({ fileInfos }: Props) => {
             else if(thisGrade >= 75){
                 setTextColor("#32de84")
             }
+<<<<<<< Updated upstream
             if(thisGrade != Math.floor((numOfCorrectAnswers / (numOfWrongAnswers + numOfCorrectAnswers)) * 100)){
+=======
+            if(thisGrade !== Math.floor((numOfCorrectAnswers / (numOfWrongAnswers + numOfCorrectAnswers)) * 100)){
+>>>>>>> Stashed changes
                 thisGrade++;
                 setAnimGrade(thisGrade);
             }
