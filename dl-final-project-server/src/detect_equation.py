@@ -22,7 +22,7 @@ labels = ['/', '+', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '=', 
 model = ''
 
 SHAPE_MODEL_PATH = "\..\..\dl_models\shape_fraction_model\shape_fraction_model.h5"
-file_path = os.path.abspath("C:/Users/mikim/OneDrive/Desktop/projects/MathWise/dl_models/shape_fraction_model/labels_dict.json")
+file_path = os.path.abspath("\..\..\dl_models\shape_fraction_model\labels_dict.json")
 SHAPE_MODEL_LABELS_FILE = open(file_path)
 SHAPE_MODEL_LABELS = json.load(SHAPE_MODEL_LABELS_FILE)
 
