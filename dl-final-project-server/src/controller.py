@@ -50,11 +50,7 @@ def upload():
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         for file in split_equations(filename):
-<<<<<<< Updated upstream
             image_enhancer(file)
-=======
-            # image_enhancer(file)
->>>>>>> Stashed changes
             image_segmentation(file)
         return jsonify({'message': 'File uploaded successfully', 'filename': filename}), 200
     else:
