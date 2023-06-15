@@ -221,7 +221,7 @@ def get_letter_rect(k, contours):
     return valid, x, y, w, h
 
 
-def letter_segmentation(lines_img, x_lines, i, base_img_lines, dir_path):
+def letter_segmentation(lines_img, x_lines, i, base_img_lines, dir_path, is_shape):
     letter_k = []
 
     copy_img = lines_img[i].copy()
@@ -257,7 +257,8 @@ def letter_segmentation(lines_img, x_lines, i, base_img_lines, dir_path):
                 letter_img = cv2.bitwise_not(letter_img_tmp)
                 file_name = dir_path + "/" + format(i + 1, '02d') + '_' + format(word, '02d') + '_' + format(letter_index, '02d') + '.jpg'
                 cv2.imwrite(file_name, 255 - letter_img)
-                remove_lines_from_equation(file_name)
+                if not is_shape:
+                    remove_lines_from_equation(file_name)
         else:
             x_linescopy.pop(0)
             word += 1
@@ -275,7 +276,8 @@ def letter_segmentation(lines_img, x_lines, i, base_img_lines, dir_path):
                 file_name = dir_path + "/" + format(i + 1, '02d') + '_' + format(word, '02d') + '_' + format(
                     letter_index, '02d') + '.jpg'
                 cv2.imwrite(file_name, 255 - letter_img)
-                remove_lines_from_equation(file_name)
+                if not is_shape:
+                    remove_lines_from_equation(file_name)
 
 
 def is_line_to_char(start_line, end_line, count_y):
@@ -305,10 +307,13 @@ def image_segmentation(filepath):
     lines_img = []
     base_img_lines = []
 
+    is_shape = "shape" in filepath
     dir_path = filepath.rsplit("/", 3)[0] + "/segmentations/" + filepath.split("/")[-1].split(".")[0]
     os.makedirs(dir_path, exist_ok=True)
     print("\nStart Segmentation Pre-Processing \n")
-    src_img = cv2.imread(filepath, cv2.IMREAD_GRAYSCALE)
+    # src_img = cv2.imread(filepath, cv2.IMREAD_GRAYSCALE)
+    src_img = cv2.imread(filepath)
+    src_img = cv2.cvtColor(src_img, cv2.COLOR_BGR2GRAY)
     orig_height, orig_width = src_img.shape
 
     height = int(width * orig_height / orig_width)
@@ -399,4 +404,4 @@ def image_segmentation(filepath):
         x_lines[i].append(width)
 
     for i in range(len(lines)):
-        letter_segmentation(lines_img, x_lines, i, base_img_lines, dir_path)
+        letter_segmentation(lines_img, x_lines, i, base_img_lines, dir_path, is_shape)

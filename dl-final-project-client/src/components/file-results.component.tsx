@@ -33,10 +33,10 @@ const FileResults = ({ fileInfos }: Props) => {
         let numOfWrongAnswers = 0;
         let numOfCorrectAnswers = 0;
         for(let i = 0; i<fileInfo.questionsData.length;i++){
-            if(fileInfo.questionsData[i].result == "Wrong"){
+            if(fileInfo.questionsData[i].result === "Wrong"){
                 numOfWrongAnswers++;
             }
-            if(fileInfo.questionsData[i].result == "Correct"){
+            if(fileInfo.questionsData[i].result === "Correct"){
                 numOfCorrectAnswers++;
             }
         }
@@ -52,7 +52,7 @@ const FileResults = ({ fileInfos }: Props) => {
             else if(thisGrade >= 75){
                 setTextColor("#32de84")
             }
-            if(thisGrade != Math.floor((numOfCorrectAnswers / (numOfWrongAnswers + numOfCorrectAnswers)) * 100)){
+            if(thisGrade !== Math.floor((numOfCorrectAnswers / (numOfWrongAnswers + numOfCorrectAnswers)) * 100)){
                 thisGrade++;
                 setAnimGrade(thisGrade);
             }

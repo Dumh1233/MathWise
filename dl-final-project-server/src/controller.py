@@ -118,7 +118,7 @@ def getQuestionsData(filename):
                 for _, dirs, _ in os.walk(crops_equations_path):
                     for dir in dirs:
                         page_equations_path = os.path.join(crops_equations_path, dir)
-
+                        print("page_equations_path: " + page_equations_path)
                         if os.path.isdir(page_equations_path):
                             for equation in os.listdir(page_equations_path):
                                 currentQuestionData = {}
@@ -129,9 +129,8 @@ def getQuestionsData(filename):
                                 currentQuestionData['image'] = "http://localhost:5000/getQuestion/" + page_equations_path + "/" + equation
 
                                 # Get result for equation
-                                print(equation)
-                                equation = detect(os.path.join(segmented_equations_path, equation))
-                                print("equation: " + equation)
+                                is_shape = "shape" in dir
+                                equation = detect(os.path.join(segmented_equations_path, equation), is_shape)
 
                                 currentQuestionData['parsed'] = equation
                                 currentQuestionData['result'] = _getAnswer(equation)
