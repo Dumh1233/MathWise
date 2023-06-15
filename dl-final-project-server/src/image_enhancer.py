@@ -1,6 +1,6 @@
 import requests
 
-API_KEY = 'wxmgo8a958boikw42'
+API_KEY = 'wxv61pt25xbpnbrw1'
 
 
 def get_image_enhancer(image_path):
@@ -16,7 +16,7 @@ def get_image_enhancer(image_path):
 
 
 def image_enhancer(image_path):
-    enhancerment = get_image_enhancer(image_path)
-    image_url = enhancerment["data"]["image"]
+    enhancement = get_image_enhancer(image_path)
+    image_url = enhancement["data"]["image"]
     response = requests.get(image_url)
     open(image_path, "wb").write(response.content)

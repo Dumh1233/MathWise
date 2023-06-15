@@ -29,8 +29,8 @@ BASE_URL = "http://localhost:5000/files/"
 
 def allowed_file(filename):
     return '.' in filename and \
-           filename.rsplit('.', 1)[1] in {
-               'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx', 'xls', 'xlsx'}
+        filename.rsplit('.', 1)[1] in {
+            'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx', 'xls', 'xlsx'}
 
 
 @app.route('/api/upload', methods=['POST'])
@@ -57,105 +57,107 @@ def upload():
         return jsonify({'message': 'Allowed file types are txt, pdf, png, jpg, jpeg, gif, doc, docx, xls, xlsx'}), 400
 
 
-def _getFileNameData(filename):
-    filenameNoExtensions = filename.partition('.')
-    filenameNoExtensions = filenameNoExtensions[0]
+def _get_file_name_data(filename):
+    filename_no_extensions = filename.partition('.')
+    filename_no_extensions = filename_no_extensions[0]
 
     file_splits_url = os.path.join(
-        app.config['UPLOAD_SPLITS_FOLDER'], filenameNoExtensions)
+        app.config['UPLOAD_SPLITS_FOLDER'], filename_no_extensions)
 
-    return filenameNoExtensions, file_splits_url
+    return filename_no_extensions, file_splits_url
 
 
 @app.route('/api/pages/<string:filename>', methods=['GET'])
-def getFilePages(filename):
+def get_file_pages(filename):
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     if os.path.isfile(file_path) and allowed_file(filename):
-        filenameNoExtensions, file_splits_url = _getFileNameData(filename)
+        filename_no_extensions, file_splits_url = _get_file_name_data(filename)
     else:
         return jsonify({'message': 'Unable to scan file!'}), 500
 
     # Build list of images of the file's pages
-    segmentedPages = []
+    segmented_pages = []
     for page in os.listdir(file_splits_url):
         # check if current path is a file
         if os.path.isdir(os.path.join(file_splits_url, page)):
-            segmentedPages.append("http://localhost:5000/getSegmentedPage/" +
-                                    filenameNoExtensions + "/" + page)
-    
-    return jsonify({'filename': filename, 'pages': segmentedPages}), 200
+            segmented_pages.append("http://localhost:5000/getSegmentedPage/" + filename_no_extensions + "/" + str(page))
+
+    return jsonify({'filename': filename, 'pages': segmented_pages}), 200
 
 
-def _getAnswer(equation):
+def _get_answer(equation):
     try:
-        equationAnswer = parser_equation(equation)
-        return 'Correct' if equationAnswer else 'Wrong'
-    except Exception:
+        equation_answer = parser_equation(equation)
+        return 'Correct' if equation_answer else 'Wrong'
+    except Exception as e:
+        print(e)
         return "could not parse"
 
 
 @app.route('/api/questions/<string:filename>', methods=['GET'])
-def getQuestionsData(filename):
+def get_questions_data(filename):
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     if os.path.isfile(file_path) and allowed_file(filename):
-        filenameNoExtensions, file_splits_url = _getFileNameData(filename)
+        filename_no_extensions, file_splits_url = _get_file_name_data(filename)
     else:
         return jsonify({'message': 'Unable to scan file!'}), 500
 
-    json_file_path = os.path.join(app.config['QUESTIONS_DATA_FOLDER'], filenameNoExtensions + '.json')
+    json_file_path = os.path.join(app.config['QUESTIONS_DATA_FOLDER'], filename_no_extensions + '.json')
 
     if os.path.isfile(json_file_path):
         with open(json_file_path, 'r') as json_file:
             questions_data = json.load(json_file)
     else:
-        try: 
+        try:
             questions_data = []
             for path in next(os.walk(file_splits_url))[1]:
-                questions_base_path = os.path.join(app.config['UPLOAD_SPLITS_FOLDER'], file_splits_url, path, 'equations')
+                questions_base_path = os.path.join(app.config['UPLOAD_SPLITS_FOLDER'], file_splits_url, path,
+                                                   'equations')
                 crops_equations_path = os.path.join(questions_base_path, 'crops')
                 segmented_equations_path = os.path.join(questions_base_path, 'segmentations')
-                
+
                 for _, dirs, _ in os.walk(crops_equations_path):
                     for dir in dirs:
                         page_equations_path = os.path.join(crops_equations_path, dir)
                         print("page_equations_path: " + page_equations_path)
                         if os.path.isdir(page_equations_path):
                             for equation in os.listdir(page_equations_path):
-                                currentQuestionData = {}
-                                currentQuestionData['type'] = dir
+                                current_question_data = {'type': dir}
                                 # Get equation image
                                 equation = equation.split('.')[0]
-                                page_equations_path = page_equations_path.replace("\\", "!") # Replace '/' with '!' in path to pass as parameter
-                                currentQuestionData['image'] = "http://localhost:5000/getQuestion/" + page_equations_path + "/" + equation
+                                # Replace '/' with '!' in path to pass as parameter
+                                page_equations_path = page_equations_path.replace("\\", "!")
+                                current_question_data['image'] = \
+                                    "http://localhost:5000/getQuestion/" + page_equations_path + "/" + equation
 
                                 # Get result for equation
                                 is_shape = "shape" in dir
                                 equation = detect(os.path.join(segmented_equations_path, equation), is_shape)
 
-                                currentQuestionData['parsed'] = equation
-                                currentQuestionData['result'] = _getAnswer(equation)
+                                current_question_data['parsed'] = equation
+                                current_question_data['result'] = _get_answer(equation)
 
-                                questions_data.append(currentQuestionData)
+                                questions_data.append(current_question_data)
 
                                 with open(json_file_path, 'w') as json_file:
                                     json.dump(questions_data, json_file)
         except Exception as e:
             return jsonify({'message': 'Could not get questions data!', 'error': str(e)}), 500
-        
+
     return jsonify({'filename': filename, 'questions_data': questions_data}), 200
 
 
 @app.route('/api/files', methods=['GET'])
-def getListFiles():
+def get_list_files():
     try:
-        fileInfos = []
+        file_info = []
         for filename in os.listdir(app.config['UPLOAD_FOLDER']):
-            fileInfos.append({
+            file_info.append({
                 "name": filename,
                 "url": BASE_URL + filename,
             })
 
-        return jsonify(fileInfos), 200
+        return jsonify(file_info), 200
     except Exception as e:
         print(e)
         return jsonify({'message': 'Unable to scan files!', 'error': str(e)}), 500
@@ -179,7 +181,7 @@ def remove(filename):
 
 
 @app.route('/api/files/<string:filename>/sync', methods=['DELETE'])
-def removeSync(filename):
+def remove_sync(filename):
     try:
         os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         return jsonify({'message': 'File is deleted.'}), 200
@@ -188,7 +190,7 @@ def removeSync(filename):
 
 
 @app.route('/api/emptyServer', methods=['DELETE'])
-def deleteAllFiles():
+def delete_all_files():
     try:
         splits_path = './resources/static/assets/uploads_splits'
         shutil.rmtree(splits_path)
@@ -208,14 +210,14 @@ def deleteAllFiles():
             file_path = os.path.join(app.config['QUESTIONS_DATA_FOLDER'], file_name)
             os.remove(file_path)
             print('deleted ' + file_path)
-            
+
         return jsonify({'message': 'All files deleted.'}), 200
     except Exception as e:
         return jsonify({'message': 'Could not delete files. ' + str(e)}), 500
 
 
 @app.route('/api/getSegmentedPage/<string:filename_directory>/<string:page>', methods=['GET'])
-def getSegmentedPage(filename_directory, page):
+def get_segmented_page(filename_directory, page):
     try:
         return send_from_directory(
             directory=app.config['UPLOAD_SPLITS_FOLDER'] + "\\" + filename_directory,
@@ -225,15 +227,16 @@ def getSegmentedPage(filename_directory, page):
         print(app.config['UPLOAD_SPLITS_FOLDER'] + "\\" + filename_directory + "\\" + page + ".jpg")
         return jsonify({'message': 'Could not download the file. ' + str(e)}), 500
 
-@app.route('/api/getQuestion/<string:dirname>/<string:filename>', methods=['GET'])
-def getQuestion(dirname, filename):
-    dirname = dirname.replace('!', '\\')
+
+@app.route('/api/getQuestion/<string:dir_name>/<string:filename>', methods=['GET'])
+def get_question(dir_name, filename):
+    dir_name = dir_name.replace('!', '\\')
     try:
         return send_from_directory(
-            directory=dirname,
+            directory=dir_name,
             path=filename + '.jpg',
             mimetype='image/jpeg')
     except Exception as e:
         print("exception : " + str(e))
-        print(dirname + "/" + filename)
+        print(dir_name + "/" + filename)
         return jsonify({'message': 'Could not download the file. ' + str(e)}), 500

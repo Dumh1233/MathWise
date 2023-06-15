@@ -56,8 +56,8 @@ def line_removal_array(array):
     list_x_upper = []
     list_x_lower = []
     for y in range(0, len(array)):
-        s_a, s_p = strtlineToRemove(y, array)
-        e_a, e_p = endlineToRemove(y, array)
+        s_a, s_p = strtline_to_remove(y, array)
+        e_a, e_p = endline_to_remove(y, array)
         if s_a >= 1 and s_p >= 1:
             list_x_upper.append(y)
         if e_a >= 1 and e_p >= 1:
@@ -66,7 +66,7 @@ def line_removal_array(array):
     return list_x_upper, list_x_lower
 
 
-def strtlineToRemove(y, array):
+def strtline_to_remove(y, array):
     count_ahead = 0
     count_prev = 0
     if y < 3:
@@ -82,7 +82,7 @@ def strtlineToRemove(y, array):
     return count_ahead, count_prev
 
 
-def endlineToRemove(y, array):
+def endline_to_remove(y, array):
     count_ahead = 0
     count_prev = 0
     if len(array) - y < 3:
@@ -193,10 +193,14 @@ def end_wrd_dtct(lines, i, bin_img, mean_lttr_width, total_width, final_thr):
     return endlines
 
 
+"""
+Helper function for properly identifying '=' symbol. OpenCV
+will treat 2 dashes of 'sign' as separate contours, thus this
+will help to identify and merge them into a single '=' contour
+"""
+
+
 def get_letter_rect(k, contours):
-    "Helper function for properly identifying '=' symbol. OpenCV"
-    "will treat 2 dashes of 'sign' as separate contours, thus this"
-    "will help to identify and merge them into a single '=' contour"
     valid = True
     x, y, w, h = cv2.boundingRect(contours[k])
     for i in range(len(contours)):
@@ -255,7 +259,8 @@ def letter_segmentation(lines_img, x_lines, i, base_img_lines, dir_path, is_shap
             letter_img = letter_img_tmp
             if letter_img.any():
                 letter_img = cv2.bitwise_not(letter_img_tmp)
-                file_name = dir_path + "/" + format(i + 1, '02d') + '_' + format(word, '02d') + '_' + format(letter_index, '02d') + '.jpg'
+                file_name = dir_path + "/" + format(i + 1, '02d') + '_' + format(word, '02d') + '_' + format(
+                    letter_index, '02d') + '.jpg'
                 cv2.imwrite(file_name, 255 - letter_img)
                 if not is_shape:
                     remove_lines_from_equation(file_name)
