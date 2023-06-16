@@ -1,60 +1,59 @@
-from abc import ABC
 from numpy import double
-from abc import ABC,abstractmethod
+from abc import ABC, abstractmethod
 
 
 class Expression(ABC):
     @abstractmethod
-    def calc(self)->double:
+    def calc(self) -> double:
         pass
 
 
 # implement the classes here
 class Num(Expression):
-    def __init__(self, num)->None:
+    def __init__(self, num) -> None:
         # private instance attributes
         self.num = num
 
-    def calc(self)->double:
+    def calc(self) -> double:
         return self.num
 
 
-class BinExp(Expression):
-    def __init__(self, left_expression, right_expression)->None:
+class BinExp(Expression, ABC):
+    def __init__(self, left_expression, right_expression) -> None:
         # protected instance attributes
         self.right_expression = right_expression
         self.left_expression = left_expression
 
 
 class Plus(BinExp):
-    def __init__(self, right_expression, left_expression)->None:
+    def __init__(self, right_expression, left_expression) -> None:
         super().__init__(right_expression, left_expression)
 
-    def calc(self)->double:
+    def calc(self) -> double:
         return self.left_expression.calc() + self.right_expression.calc()
 
 
 class Minus(BinExp):
-    def __init__(self, right_expression, left_expression)->None:
+    def __init__(self, right_expression, left_expression) -> None:
         super().__init__(right_expression, left_expression)
 
-    def calc(self)->double:
+    def calc(self) -> double:
         return self.left_expression.calc() - self.right_expression.calc()
 
 
 class Mul(BinExp):
-    def __init__(self, right_expression, left_expression)->None:
+    def __init__(self, right_expression, left_expression) -> None:
         super().__init__(right_expression, left_expression)
 
-    def calc(self)->double:
+    def calc(self) -> double:
         return self.left_expression.calc() * self.right_expression.calc()
 
 
 class Div(BinExp):
-    def __init__(self, right_expression, left_expression)->None:
+    def __init__(self, right_expression, left_expression) -> None:
         super().__init__(right_expression, left_expression)
 
-    def calc(self)->double:
+    def calc(self) -> double:
         return self.left_expression.calc() / self.right_expression.calc()
 
 
@@ -72,7 +71,7 @@ def parser_equation(expression):
         return parser(expression)
 
 
-def parser(expression)->double:
+def parser(expression) -> double:
     formatted_expression = simplify_brackets(expression)
 
     expression_array = equation_to_array(formatted_expression)
@@ -90,7 +89,7 @@ def parser(expression)->double:
     return expression_array[0].calc()
 
 
-def calculate_sign(expression_array, sign_dict)->list:
+def calculate_sign(expression_array, sign_dict) -> list:
     key_count = 0
     for key in sign_dict.keys():
         key_count += expression_array.count(key)
@@ -109,13 +108,14 @@ def calculate_sign(expression_array, sign_dict)->list:
     return expression_array
 
 
-def equation_to_array(formatted_expression)->list:
+def equation_to_array(formatted_expression) -> list:
     expression_array = []
     index = 0
     num = Num(0)
     while len(formatted_expression) > index:
         if formatted_expression[index].isdigit() or \
-                (formatted_expression[index] in "+-" and not (index != 0 and formatted_expression[index - 1].isdigit())):
+                (formatted_expression[index] in "+-" and not (
+                        index != 0 and formatted_expression[index - 1].isdigit())):
             seperator_index = index + 1
             while len(formatted_expression) > seperator_index and formatted_expression[seperator_index] not in '-+*/)':
                 seperator_index = seperator_index + 1
@@ -130,7 +130,7 @@ def equation_to_array(formatted_expression)->list:
     return expression_array
 
 
-def simplify_brackets(expression)->str:
+def simplify_brackets(expression) -> str:
     formatted_expression = expression
     index = formatted_expression.find("(")
     while index != -1:
